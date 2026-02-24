@@ -2,6 +2,7 @@ import os
 import psutil
 import shutil
 import zipfile
+from django.conf import settings
 from mcstatus import BedrockServer
 
 
@@ -20,8 +21,8 @@ def get_server_stats(ip="127.0.0.1", port=19132):
     }
 
     # Minecraft Stats
-    server_dir = "minecraft/bedrock/"
-    properties_path = os.path.join(server_dir, "server.properties")
+    server_path = settings.SERVER_PATH
+    properties_path = os.path.join(server_path, "server.properties")
     current_port = get_port_from_properties(properties_path)
 
     try:
@@ -167,7 +168,7 @@ def handle_world_upload(server_path, worlds_path, world_file):
                 else:
                     os.makedirs(os.path.dirname(target_p), exist_ok=True)
                     with zip_ref.open(member) as source, \
-                         open(target_p, "wb") as target:
+                            open(target_p, "wb") as target:
                         shutil.copyfileobj(source, target)
 
         return True, f"World '{world_name}' imported successfully."

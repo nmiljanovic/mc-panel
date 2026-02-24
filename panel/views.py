@@ -1,6 +1,7 @@
 import os
 import subprocess
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
@@ -42,6 +43,7 @@ class LoginForm(AuthenticationForm):
 
 @login_required
 def dashboard(request):
+    server_path = settings.SERVER_PATH
     stats = get_server_stats()
     if request.method == "POST":
         action = request.POST.get("action")
@@ -51,7 +53,7 @@ def dashboard(request):
                 # Your existing Popen start logic here
                 subprocess.Popen(
                     './bedrock_server > server_output.log 2>&1',
-                    cwd='minecraft/bedrock/',
+                    cwd=server_path,
                     shell=True
                 )
 
@@ -66,19 +68,20 @@ def dashboard(request):
     return render(request, 'dashboard.html', {
         'stats': stats,
         'is_running': running_status,
-        'logs': get_latest_logs('minecraft/bedrock/server_output.log')
+        'logs': get_latest_logs(server_path / 'server_output.log')
     })
 
 
 @login_required
 def edit_settings(request):
-    prop_path = 'minecraft/bedrock/server.properties'
+    server_path = settings.SERVER_PATH
+    prop_path = os.path.join(server_path, 'server.properties')
     if request.method == "POST":
         # Get all updated keys from the form
         new_settings = {
             key: value for key, value in request.POST.items()
             if key != 'csrfmiddlewaretoken'
-            }
+        }
         save_properties(prop_path, new_settings)
         return redirect('dashboard')
 
@@ -88,12 +91,12 @@ def edit_settings(request):
 
 @login_required
 def manage_assets(request):
-    server_path = 'minecraft/bedrock/'
+    server_path = settings.SERVER_PATH
     worlds_path = os.path.join(server_path, 'worlds')
 
     # Current active world
     active_world = read_properties(
-            os.path.join(server_path, 'server.properties')).get('level-name')
+        os.path.join(server_path, 'server.properties')).get('level-name')
 
     # List existing worlds for the "Load World" dropdown
     worlds = ["No worlds found. Start the server first."]
@@ -107,8 +110,8 @@ def manage_assets(request):
         if 'upload_world' in request.POST:
             world_file = request.FILES['world_file']
             success, message = handle_world_upload(
-                    server_path, worlds_path, world_file
-                    )
+                server_path, worlds_path, world_file
+            )
             # Add message to Django messages framework
             if success:
                 messages.success(request, f"{message}")
@@ -129,10 +132,11 @@ def manage_assets(request):
 
         elif 'delete_world' in request.POST:
             selected_world = request.POST.get('world_name')
-            world_del_path = os.path.join(server_path, 'worlds', selected_world)
+            world_del_path = os.path.join(
+                server_path, 'worlds', selected_world)
             success, message = delete_world_dir(
-                    world_del_path, selected_world, active_world
-                    )
+                world_del_path, selected_world, active_world
+            )
 
             if success:
                 messages.success(request, f"{message}")
