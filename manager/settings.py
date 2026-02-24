@@ -16,7 +16,7 @@ if ENV_PATH.exists():
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG')
-SERVER_PATH = os.path.join(BASE_PATH, os.environ.get('SERVER_PATH'))
+SERVER_PATH = BASE_PATH / os.environ.get('SERVER_PATH')
 
 # Security settings for HTTPS
 SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT') == 'True'
