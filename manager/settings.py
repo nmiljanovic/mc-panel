@@ -1,11 +1,13 @@
+from pathlib import Path
 import os
 
-# Build paths inside the project
-BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ENV_PATH = os.path.join(BASE_PATH, '.env')
+# Build paths inside the project: BASE_DIR / 'subdir'
+BASE_DIR = Path(__file__).resolve().parent.parent
+SERVER_PATH = BASE_DIR / 'minecraft/bedrock/'
+ENV_PATH = BASE_DIR / '.env'
 
 # Read the .env file
-if os.path.exists(ENV_PATH):
+if ENV_PATH.exists():
     with open(ENV_PATH) as f:
         for line in f:
             # Skip comments and empty lines
@@ -15,7 +17,6 @@ if os.path.exists(ENV_PATH):
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG')
-SERVER_PATH = os.path.join(BASE_PATH, os.environ.get('SERVER_PATH'))
 
 # Security settings for HTTPS
 SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT') == 'True'
@@ -73,7 +74,7 @@ WSGI_APPLICATION = 'manager.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': [os.path.join(BASE_PATH, 'db.sqlite3')],
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -104,6 +105,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_PATH, 'static')
+STATIC_ROOT = BASE_DIR / 'static'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
