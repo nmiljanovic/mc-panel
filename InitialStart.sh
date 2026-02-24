@@ -1,11 +1,12 @@
 #!/usr/bin/bash
 
 # Configuration
-MC_DIR="minecraft/bedrock"
+SERVER_PATH="minecraft/bedrock"
 SERVICE_NAME="${USER}-mcpanel.service"
 SERVICE_PATH="/etc/systemd/system/${SERVICE_NAME}"
 WORK_DIR="/home/${USER}/mc_panel"
 WIKI_URL="https://minecraft.wiki/w/Bedrock_Dedicated_Server"
+PANEL_PORT="50222"
 
 echo 
 echo "Inital Configuration for Django Bedrock Panel"
@@ -16,9 +17,9 @@ echo
 echo "Checking for minecraft/bedrock directory..."
 
 # 1. Check for minecraft directory
-if [ ! -d "$MC_DIR" ]; then
-    read -p "Directory '$MC_DIR' not found. Download and unzip latest Bedrock server? (y/n): " confirm
-    mkdir -p $MC_DIR
+if [ ! -d "$SERVER_PATH" ]; then
+    read -p "Directory '$SERVER_PATH' not found. Download and unzip latest Bedrock server? (y/n): " confirm
+    mkdir -p $SERVER_PATH
     if [[ $confirm == [yY] ]]; then
 	DOWNLOAD_URL=$(curl -s -L -A "Mozilla/5.0" "$WIKI_URL" | \
    	grep -oP 'https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+\.zip' | \
@@ -36,9 +37,9 @@ if [ ! -d "$MC_DIR" ]; then
         ZIP_FILE=$(ls bedrock-server-*.zip | tail -n 1)
         
         if [ -f "$ZIP_FILE" ]; then
-            unzip "$ZIP_FILE" -d "$MC_DIR"
+            unzip "$ZIP_FILE" -d "$SERVER_PATH"
             rm "$ZIP_FILE"
-            echo "Minecraft server unzipped from $ZIP_FILE into $MC_DIR."
+            echo "Minecraft server unzipped from $ZIP_FILE into $SERVER_PATH."
         else
             echo "Error: Zip file not found after download."
             exit 1
@@ -68,7 +69,7 @@ After=network.target
 User=${USER}
 Group=${USER}
 WorkingDirectory=$WORK_DIR
-ExecStart=/home/${USER}/.local/bin/uv run gunicorn manager.wsgi:application --bind 127.0.0.1:50222
+ExecStart=/home/${USER}/.local/bin/uv run gunicorn manager.wsgi:application --bind 127.0.0.1:$PANEL_PORT
 Restart=always
 
 [Install]
