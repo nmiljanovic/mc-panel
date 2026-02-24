@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>
+                    Active World <small>({{ active_world|default:"Unknown" }})</small>
+                </h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <select name="world_name" class="form-select mb-3">
+                        {% for world in worlds %}<option value="{{ world }}">{{ world }}</option>{% endfor %}
+                    </select>
+                    <button name="set_world" class="btn btn-primary">Change World</button>
+                    <button name="delete_world"
+                            class="btn btn-danger"
+                            onclick="return confirm('Permanently delete this world data?');">Delete World</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>
+                    Install World <small>(.mcworld)</small>
+                </h5>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file"
+                           name="world_file"
+                           class="form-control mb-3"
+                           accept=".mcworld">
+                    <button name="upload_world" class="btn btn-success">Upload World</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

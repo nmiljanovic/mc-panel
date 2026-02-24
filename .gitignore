@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+
+# Environments
+.venv/
+venv/
+env/
+
+# Django
+#db.sqlite3
+*.log
+*.pot
+static/
+
+# Other
+minecraft/
+LocalPanel.sh
