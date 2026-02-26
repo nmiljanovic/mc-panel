@@ -38,6 +38,7 @@ MIDDLEWARE = [
 
 if config('USE_WHITENOISE'):
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STATIC_ROOT = BASE_PATH / 'static'
 
 ROOT_URLCONF = 'manager.urls'
 
@@ -94,6 +95,5 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_PATH / 'static'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
