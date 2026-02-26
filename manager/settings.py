@@ -7,7 +7,7 @@ BASE_PATH = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 SERVER_PATH = BASE_PATH / config('SERVER_PATH')
-STATIC_PATH = config('STATIC_PATH')
+STATIC_ROOT = config('STATIC_PATH')
 
 # Security settings for HTTPS
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)
@@ -95,6 +95,5 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
-STATIC_ROOT = STATIC_PATH
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
