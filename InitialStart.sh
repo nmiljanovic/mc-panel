@@ -6,7 +6,7 @@ SERVICE_NAME="${USER}-mcpanel.service"
 SERVICE_PATH="/etc/systemd/system/${SERVICE_NAME}"
 WORK_DIR="/home/${USER}/mc_panel"
 WIKI_URL="https://minecraft.wiki/w/Bedrock_Dedicated_Server"
-PANEL_PORT="50222"
+PANEL_PORT="54222"
 
 echo 
 echo "Inital Configuration for Django Bedrock Panel"
