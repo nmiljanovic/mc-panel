@@ -68,7 +68,7 @@ def dashboard(request):
     return render(request, 'dashboard.html', {
         'stats': stats,
         'is_running': running_status,
-        'logs': get_latest_logs(server_path / 'server_output.log')
+        'logs': get_latest_logs(os.path.join(server_path, 'server_output.log'))
     })
 
 

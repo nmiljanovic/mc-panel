@@ -1,31 +1,20 @@
-import os
 from pathlib import Path
+from decouple import config
 
-# Build paths inside the project: BASE_PATH / 'subdir'
+# Build paths: BASE_PATH / 'subdir'
 BASE_PATH = Path(__file__).resolve().parent.parent
-ENV_PATH = BASE_PATH / '.env'
 
-# Read the .env file
-if ENV_PATH.exists():
-    with open(ENV_PATH) as f:
-        for line in f:
-            # Skip comments and empty lines
-            if line.strip() and not line.startswith('#'):
-                key, value = line.strip().split('=', 1)
-                os.environ[key] = value
-
-SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG = os.environ.get('DEBUG')
-SERVER_PATH = BASE_PATH / os.environ.get('SERVER_PATH')
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG', cast=bool)
+SERVER_PATH = BASE_PATH / config('SERVER_PATH')
 
 # Security settings for HTTPS
-SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT') == 'True'
-SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE') == 'True'
-CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE') == 'True'
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', cast=bool)
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', '').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', '').split(',')
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 
 # Application definition
 INSTALLED_APPS = [
@@ -47,7 +36,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if os.environ.get('USE_WHITENOISE') == 'True':
+if config('USE_WHITENOISE'):
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'manager.urls'

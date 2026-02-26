@@ -69,7 +69,7 @@ After=network.target
 User=${USER}
 Group=${USER}
 WorkingDirectory=$WORK_DIR
-ExecStart=/home/${USER}/.local/bin/uv run gunicorn manager.wsgi:application --bind 127.0.0.1:$PANEL_PORT
+ExecStart=/home/${USER}/.local/bin/uv run gunicorn manager.wsgi:application --bind 127.0.0.1:$PANEL_PORT 
 Restart=always
 
 [Install]
