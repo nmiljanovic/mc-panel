@@ -159,7 +159,7 @@ def handle_world_upload(server_path, worlds_path, world_file):
                 if not member.filename.startswith(internal_root):
                     continue
 
-                # Calculate relative path to keep structure clean
+                # Calculate relative path
                 rel_p = os.path.relpath(member.filename, internal_root)
                 target_p = os.path.normpath(os.path.join(final_dest, rel_p))
 

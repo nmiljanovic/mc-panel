@@ -50,7 +50,7 @@ def dashboard(request):
 
         if action == "start":
             if not is_server_running():
-                # Your existing Popen start logic here
+                # Popen start logic here
                 subprocess.Popen(
                     './bedrock_server > server_output.log 2>&1',
                     cwd=server_path,
