@@ -184,7 +184,7 @@ def delete_world_dir(world_del_path, selected_world, active_world):
 
     # Delete world directory
     if is_server_running():
-        return False, "Shut down the server first."
+        return False, "Cannot delete world. Stop the server first."
     if selected_world in active_world:
         return False, "Cannot delete active world."
     if not os.path.exists(world_del_path):
