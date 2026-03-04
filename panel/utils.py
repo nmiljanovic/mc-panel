@@ -1,7 +1,10 @@
 import os
+import re
 import psutil
 import shutil
 import zipfile
+import subprocess
+import urllib.request
 from django.conf import settings
 from mcstatus import BedrockServer
 
@@ -33,7 +36,7 @@ def get_server_stats(ip="127.0.0.1", port=19132):
         stats['version'] = status.version.version
         stats['online'] = True
     except Exception as e:
-        print(f"Ping failed: {e}")
+        print(f"Ping failed: {str(e)}")
         stats['online'] = False
 
     return stats
@@ -41,13 +44,20 @@ def get_server_stats(ip="127.0.0.1", port=19132):
 
 def read_properties(file_path):
     config = {}
-    with open(file_path, 'r') as f:
-        for line in f:
-            if line.startswith('#') or '=' not in line:
-                continue
-            key, value = line.split('=', 1)
-            config[key.strip()] = value.strip()
-    return config
+    # Read server.properties file
+    if not os.path.exists(file_path):
+        return False, "No server.properties file found.", {}
+
+    try:
+        with open(file_path, 'r') as f:
+            for line in f:
+                if line.startswith('#') or '=' not in line:
+                    continue
+                key, value = line.split('=', 1)
+                config[key.strip()] = value.strip()
+        return True, "", config
+    except Exception as e:
+        return False, f"Unable to read server.properties file: {str(e)}", {}
 
 
 def save_properties(file_path, new_config):
@@ -72,7 +82,7 @@ def save_properties(file_path, new_config):
             f.writelines(lines)
         return True, "Updated the server.properties file."
     except Exception as e:
-        return False, f"Error with server.properties file: {str(e)}"
+        return False, f"Unable to update server.properties file: {str(e)}"
 
 
 def get_latest_logs(log_file_path, line_count=30):
@@ -181,7 +191,6 @@ def handle_world_upload(server_path, worlds_path, world_file):
 
 
 def delete_world_dir(world_del_path, selected_world, active_world):
-
     # Delete world directory
     if is_server_running():
         return False, "Cannot delete world. Stop the server first."
@@ -197,3 +206,93 @@ def delete_world_dir(world_del_path, selected_world, active_world):
         return False, "Permission denied. Is the server still running?"
     except Exception as e:
         return False, str(e)
+
+
+def get_latest_version_url():
+    WIKI_URL = "https://minecraft.wiki/w/Bedrock_Dedicated_Server"
+
+    try:
+        # 1. Fetch the HTML
+        req = urllib.request.Request(
+            WIKI_URL, headers={"User-Agent": "Wget/1.21"})
+        with urllib.request.urlopen(req, timeout=10) as response:
+            # urllib returns bytes, decode to string
+            html_content = response.read().decode('utf-8')
+
+        # Look for https link containing 'bin-linux' ending in .zip
+        links = re.findall(
+            r'https://[^\s"<>]+bin-linux[^\s"<>]+?\.zip', html_content)
+
+        # 3. Filter out "preview" versions
+        stable_link = [link for link in links if "preview" not in link.lower()]
+
+        # 4. Return the last match
+        return stable_link[-1] if stable_link else None
+
+    except Exception as e:
+        return False, f"Error fetching url from wiki: {str(e)}"
+        return None
+
+
+def update_bedrock_server(server_path):
+    if is_server_running():
+        return False, "Cannot update. Stop the server first."
+
+    download_url = get_latest_version_url()
+    if not download_url:
+        return False, "Unable to find a valid download URL."
+
+    # 1. Setup temp path
+    temp_path = os.path.join(server_path, 'temp')
+    if os.path.exists(temp_path):
+        shutil.rmtree(temp_path)
+    os.makedirs(temp_path)
+
+    # 2. Download via wget
+    try:
+        subprocess.run([
+            'wget', '-q', '-P', temp_path, download_url
+        ], check=True, timeout=90)
+    except subprocess.TimeoutExpired:
+        return False, "Download timed out."
+    except subprocess.CalledProcessError:
+        return False, "Unable to download the file."
+
+    server_zip = os.path.join(temp_path, os.path.basename(download_url))
+
+    # 3. Extract
+    with zipfile.ZipFile(server_zip, 'r') as zip_ref:
+        zip_ref.extractall(temp_path)
+
+    # 4. Define items to PRESERVE (Worlds, Configs, Mods)
+    preserve = [
+        'worlds',
+        'server.properties',
+        'allowlist.json',
+        'permissions.json',
+        'resource_packs',
+        'behavior_packs'
+    ]
+
+    # 5. Atomic Update: Move files from Temp to Server Path
+    for item in os.listdir(temp_path):
+        if item in preserve or item.endswith('.zip'):
+            continue
+
+        src = os.path.join(temp_path, item)
+        dst = os.path.join(server_path, item)
+
+        if os.path.isdir(src):
+            if os.path.exists(dst):
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
+        else:
+            shutil.copy2(src, dst)
+
+    # 6. Make bedrock_server file executable
+    binary_path = os.path.join(server_path, 'bedrock_server')
+    if os.path.exists(binary_path):
+        os.chmod(binary_path, 0o755)
+
+    shutil.rmtree(temp_path)
+    return True, "Server updated successfully. All settings preserved."

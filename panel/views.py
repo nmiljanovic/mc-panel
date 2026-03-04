@@ -14,7 +14,8 @@ from .utils import (
     stop_bedrock_server,
     get_latest_logs,
     handle_world_upload,
-    delete_world_dir
+    delete_world_dir,
+    update_bedrock_server
 )
 
 
@@ -46,9 +47,7 @@ def dashboard(request):
     server_path = settings.SERVER_PATH
     stats = get_server_stats()
     if request.method == "POST":
-        action = request.POST.get("action")
-
-        if action == "start":
+        if 'start' in request.POST.get("action"):
             if not is_server_running():
                 # Popen start logic here
                 subprocess.Popen(
@@ -57,12 +56,18 @@ def dashboard(request):
                     shell=True
                 )
 
-        elif action == "stop":
+        elif 'stop' in request.POST.get("action"):
             stop_bedrock_server()
+
+        elif 'update' in request.POST.get("action"):
+            success, message = update_bedrock_server(server_path)
+            if success:
+                messages.success(request, f"{message}")
+            else:
+                messages.error(request, f"{message}")
 
         return redirect('dashboard')
 
-    # Use the check function instead of the global variable
     running_status = is_server_running()
 
     return render(request, 'dashboard.html', {
@@ -82,10 +87,16 @@ def edit_settings(request):
             key: value for key, value in request.POST.items()
             if key != 'csrfmiddlewaretoken'
         }
-        save_properties(prop_path, new_settings)
-        return redirect('dashboard')
+        success, message = save_properties(prop_path, new_settings)
+        if success:
+            messages.success(request, f"{message}")
+        else:
+            messages.error(request, f"{message}")
 
-    current_settings = read_properties(prop_path)
+    success, message, current_settings = read_properties(prop_path)
+    if not success:
+        messages.error(request, f"{message}")
+
     return render(request, 'settings.html', {'settings': current_settings})
 
 
@@ -96,7 +107,7 @@ def manage_assets(request):
 
     # Current active world
     active_world = read_properties(
-        os.path.join(server_path, 'server.properties')).get('level-name')
+        os.path.join(server_path, 'server.properties'))[2].get('level-name')
 
     # List existing worlds for the "Load World" dropdown
     worlds = ["No worlds found. Start the server first."]
