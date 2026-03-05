@@ -87,7 +87,7 @@ def save_properties(file_path, new_config):
 
 def get_latest_logs(log_file_path, line_count=30):
     if not os.path.exists(log_file_path):
-        return "No logs found. Start the server first."
+        return "No log file found. Start the server first."
 
     with open(log_file_path, 'r') as f:
         # Get the last N lines efficiently
@@ -203,7 +203,7 @@ def delete_world_dir(world_del_path, selected_world, active_world):
         shutil.rmtree(world_del_path)
         return True, "World successfully deleted."
     except PermissionError:
-        return False, "Permission denied. Is the server still running?"
+        return False, "Permission denied. Stop the server first."
     except Exception as e:
         return False, str(e)
 
@@ -240,7 +240,7 @@ def update_bedrock_server(server_path):
 
     download_url = get_latest_version_url()
     if not download_url:
-        return False, "Unable to find a valid download URL."
+        return False, "Unable to find download URL."
 
     # 1. Setup temp path
     temp_path = os.path.join(server_path, 'temp')
@@ -295,4 +295,4 @@ def update_bedrock_server(server_path):
         os.chmod(binary_path, 0o755)
 
     shutil.rmtree(temp_path)
-    return True, "Server updated successfully. All settings preserved."
+    return True, "Server updated successfully."
