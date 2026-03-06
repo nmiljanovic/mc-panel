@@ -1,0 +1,11 @@
+asgiref==3.11.1
+asyncio-dgram==3.0.0
+django==6.0.2
+dnspython==2.8.0
+gunicorn==25.0.3
+mcstatus==12.2.1
+packaging==26.0
+psutil==7.2.2
+python-decouple==3.8
+sqlparse==0.5.5
+whitenoise==6.11.0
