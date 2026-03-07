@@ -22,7 +22,7 @@ WORKDIR /mc_panel
 COPY . /mc_panel
 
 # Create non-root user with explicit UID and add permission to access /app
-RUN adduser -u 5678 --disabled-password --gecos "" $USER && chown -R $USER /app
+RUN adduser -u 5678 --disabled-password --gecos "" $USER && chown -R $USER /mc_panel
 USER appuser
 
 CMD ["gunicorn", "--bind", "0.0.0.0:54222", "manager.wsgi"]
