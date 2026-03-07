@@ -2,12 +2,11 @@ from pathlib import Path
 from decouple import config
 
 # Build paths: BASE_PATH / 'subdir'
-BASE_PATH = Path(__file__).resolve().parent.parent
-HOME_PATH = Path.home()
+BASE_PATH = Path(__file__).resolve().parent
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
-SERVER_PATH = HOME_PATH / config('SERVER_PATH')
+SERVER_PATH = config('SERVER_PATH')
 STATIC_ROOT = config('STATIC_PATH')
 
 # Security settings for HTTPS
