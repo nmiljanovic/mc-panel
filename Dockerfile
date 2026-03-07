@@ -1,11 +1,12 @@
 FROM python:3-slim
 
+# Container listen port: does not publish
 EXPOSE 54222
 
-# Keeps Python from generating .pyc files in the container
+# Keep Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Turns off buffering for easier container logging
+# Turn off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
 # Install pip requirements
@@ -20,7 +21,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 WORKDIR /app
 COPY . /app
 
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# Create non-root user with explicit UID and add permission to access /app
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 USER appuser
 
