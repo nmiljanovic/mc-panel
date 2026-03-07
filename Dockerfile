@@ -19,12 +19,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 # ... rest of the Dockerfile
 
-WORKDIR /app
-COPY . /app
+WORKDIR /home/$USER/mc_panel
+COPY . /home/$USER/mc_panel
 
-# Create non-root user with explicit UID and add permission to access /app
+# Create non-root user with explicit UID and add permission to access WORKDIR 
 ARG USER=minecraft
-RUN adduser -u 5678 --disabled-password --gecos "" $USER && chown -R $USER /app
+RUN adduser -u 5678 --disabled-password --gecos "" $USER && chown -R $USER /home/$USER/mc_panel
 USER $USER 
 
 CMD ["gunicorn", "--bind", "0.0.0.0:54222", "manager.wsgi"]
