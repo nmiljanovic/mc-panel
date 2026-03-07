@@ -17,13 +17,13 @@ RUN python -m pip install -r requirements.txt
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libcurl4 \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-# ... rest of the Dockerfile
 
+# ... rest of the Dockerfile
+ARG USER=minecraft
 WORKDIR /home/$USER/mc_panel
 COPY . /home/$USER/mc_panel
 
 # Create non-root user with explicit UID and add permission to access WORKDIR 
-ARG USER=minecraft
 RUN adduser -u 5678 --disabled-password --gecos "" $USER && chown -R $USER /home/$USER/mc_panel
 USER $USER 
 
