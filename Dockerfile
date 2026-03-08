@@ -23,5 +23,5 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 WORKDIR /mcpanel
 COPY . /mcpanel
 
-# Default start command2s
-CMD gunicorn --bind 0.0.0.0:$PORT manager.wsgi
+# JSON form that explicitly calls a shell to expand the variable
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} manager.wsgi"]
