@@ -8,5 +8,5 @@ services:
     volumes:
       - /home/${USER}/minecraft:/minecraft
     ports:
-      - "127.0.0.1:${PORT}:${PORT}/tcp"
-      - "127.0.0.1:${PORT}:${MCPORT}/udp"
+      - "127.0.0.1:54222:54222/tcp"
+      - "127.0.0.1:54222:19134/udp"
