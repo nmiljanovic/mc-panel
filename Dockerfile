@@ -1,5 +1,7 @@
 FROM python:3-slim
 
+EXPOSE 54222 
+
 # Keep Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
 
