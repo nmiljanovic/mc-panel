@@ -1,0 +1,12 @@
+services:
+  mc-panel:
+    image: mc-panel:latest
+    container_name: minecraft_panel
+    restart: unless-stopped
+    env_file: 
+      - /home/${USER}/mc_panel/.env
+    volumes:
+      - /home/${USER}/minecraft:/minecraft
+    ports:
+      - "127.0.0.1:${PORT}:${PORT}/tcp"
+      - "127.0.0.1:${PORT}:${MCPORT}/udp"
