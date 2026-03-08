@@ -1,8 +1,9 @@
 # Include python dep
 FROM python:3-slim
 
-# Internal usage: does not publish
-EXPOSE 54222 
+# Internal usage between containers: not port forwarding
+ARG PORT=50222
+EXPOSE $PORT
 
 # Keep Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -22,5 +23,5 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 WORKDIR /mcpanel
 COPY . /mcpanel
 
-# Default start commands
-CMD ["gunicorn", "--bind", "0.0.0.0:54222", "manager.wsgi"]
+# Default start command2s
+CMD gunicorn --bind 0.0.0.0:$PORT manager.wsgi
