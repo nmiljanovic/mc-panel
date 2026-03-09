@@ -208,13 +208,12 @@ def delete_world_dir(world_del_path, selected_world, active_world):
         return False, str(e)
 
 
-def get_latest_version_url():
-    WIKI_URL = "https://minecraft.wiki/w/Bedrock_Dedicated_Server"
+def get_latest_version_url(wiki_url):
 
     try:
         # 1. Fetch the HTML
         req = urllib.request.Request(
-            WIKI_URL, headers={"User-Agent": "Wget/1.21"})
+            wiki_url, headers={"User-Agent": "Wget/1.21"})
         with urllib.request.urlopen(req, timeout=10) as response:
             # urllib returns bytes, decode to string
             html_content = response.read().decode('utf-8')
@@ -234,11 +233,11 @@ def get_latest_version_url():
         return None
 
 
-def update_bedrock_server(server_path):
+def update_bedrock_server(server_path, wiki_url):
     if is_server_running():
         return False, "Cannot update. Stop the server first."
 
-    download_url = get_latest_version_url()
+    download_url = get_latest_version_url(wiki_url)
     if not download_url:
         return False, "Unable to find download URL."
 

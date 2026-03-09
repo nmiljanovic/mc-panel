@@ -45,6 +45,7 @@ class LoginForm(AuthenticationForm):
 @login_required
 def dashboard(request):
     server_path = settings.SERVER_PATH
+    wiki_url = settings.WIKI_URL
     stats = get_server_stats()
     if request.method == "POST":
         if 'start' in request.POST.get("action"):
@@ -60,7 +61,7 @@ def dashboard(request):
             stop_bedrock_server()
 
         elif 'update' in request.POST.get("action"):
-            success, message = update_bedrock_server(server_path)
+            success, message = update_bedrock_server(server_path, wiki_url)
             if success:
                 messages.success(request, f"{message}")
             else:

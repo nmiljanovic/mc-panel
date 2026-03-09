@@ -8,6 +8,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 SERVER_PATH = config('SERVER_PATH')
 STATIC_ROOT = config('STATIC_PATH')
+WIKI_URL = config('WIKI_URL')
 
 # Security settings for HTTPS
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)
