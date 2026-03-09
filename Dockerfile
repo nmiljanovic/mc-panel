@@ -19,9 +19,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libcurl4 \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Create dir inside container under root 
+# Create directory inside container under root 
 WORKDIR /mcpanel
 COPY . /mcpanel
 
-# JSON form that explicitly calls a shell to expand the variable
+# JSON form that explicitly calls a shell to expand PORT 
 CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} manager.wsgi"]

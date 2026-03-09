@@ -1,7 +1,7 @@
 Django Bedrock Panel
 
-# Run the ServerDownload script to fetch and unzip latest bedrock server
-1. Run ./ServerDownload.sh
+# Run the ServerDownload.sh script to fetch and unzip latest bedrock server
+1. chmod u+x ServerDownload.sh && ./ServerDownload.sh
 
 # Run the following command with YOUR PORT number to create a docker image:
 2. docker build --build-arg PORT=50222 -t mc-panel .
