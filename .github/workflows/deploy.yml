@@ -23,5 +23,5 @@ jobs:
         run: |
           rsync -avz -e "ssh -p ${{ secrets.VPS_PORT }} -o StrictHostKeyChecking=no" \
             --exclude-from='.rsync-filter' \
-            --delete ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:${{ secrets.VPS_DIR }} \
-            git fetch origin main && git reset --hard origin/main
+            --delete ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:${{ secrets.VPS_DIR }}
+          git fetch origin main && git reset --hard origin/main
