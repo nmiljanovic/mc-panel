@@ -2,7 +2,7 @@
 FROM python:3-slim
 
 # Internal usage between containers: not port forwarding
-ARG PORT=50222
+ARG PORT
 EXPOSE $PORT
 
 # Keep Python from generating .pyc files in the container
