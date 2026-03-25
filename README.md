@@ -1,4 +1,4 @@
-Django Bedrock Panel
+.Django Bedrock Panel.
 
 # Run the ServerDownload.sh script to fetch and unzip latest bedrock server:
 chmod u+x ServerDownload.sh && ./ServerDownload.sh
