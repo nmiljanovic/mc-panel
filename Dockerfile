@@ -17,7 +17,6 @@ RUN python -m pip install -r requirements.txt
 # ... other dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libcurl4 \
-    wget \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Create directory inside container under root 
