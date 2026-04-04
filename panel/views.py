@@ -1,4 +1,5 @@
 import os
+import json
 import subprocess
 from django import forms
 from django.conf import settings
@@ -15,7 +16,9 @@ from .utils import (
     get_latest_logs,
     handle_world_upload,
     delete_world_dir,
-    update_bedrock_server
+    update_bedrock_server,
+    get_json_data,
+    save_json_data
 )
 
 
@@ -160,3 +163,47 @@ def manage_assets(request):
     return render(request, 'assets.html', {
         'worlds': worlds, 'active_world': active_world
     })
+
+
+@login_required
+def edit_configs(request):
+    server_path = settings.SERVER_PATH
+    allowlist_path = os.path.join(server_path, 'allowlist.json')
+    permissions_path = os.path.join(server_path, 'permissions.json')
+
+    if request.method == 'POST':
+        # Get the raw string from the textarea
+        allowlist_raw = request.POST.get('allowlist_data')
+        permissions_raw = request.POST.get('permissions_data')
+
+        # Validate and save Allowlist, Permissions
+        success, message = save_json_data(allowlist_path, allowlist_raw)
+
+        if success:
+            messages.success(request, f"{message} allowlist.json file.")
+        else:
+            messages.error(request, f"{message} - allowlist.json")
+
+        success, message = save_json_data(permissions_path, permissions_raw)
+
+        if success:
+            messages.success(request, f"{message} permissions.json file.")
+        else:
+            messages.error(request, f"{message} - permissions.json")
+
+        return redirect('edit_configs')
+
+    # GET request: Load current JSON data
+    success, message, allowlist_data = get_json_data(allowlist_path)
+    if not success:
+        messages.error(request, f"{message} - allowlist.json")
+
+    success, message, permissions_data = get_json_data(permissions_path)
+    if not success:
+        messages.error(request, f"{message} - permissions.json")
+
+    context = {
+        'allowlist': json.dumps(allowlist_data, indent=4),
+        'permissions': json.dumps(permissions_data, indent=4),
+    }
+    return render(request, 'editor.html', context)

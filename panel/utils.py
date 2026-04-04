@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import psutil
 import shutil
 import zipfile
@@ -295,3 +296,37 @@ def update_bedrock_server(server_path, wiki_url):
 
     shutil.rmtree(temp_path)
     return True, "Server updated successfully."
+
+
+def get_json_data(file_path):
+    if not os.path.exists(file_path):
+        return False, "No file found", []
+
+    try:
+        with open(file_path, 'r') as f:
+            json_data = json.load(f)
+        return True, "", json_data
+
+    except json.JSONDecodeError:
+        return False, "File contains invalid JSON", []
+    except IOError as e:
+        return False, f"Could not read file: {str(e)}", []
+
+
+def save_json_data(file_path, raw_json_string):
+    try:
+        # 1. Try to parse the string into a Python object
+        data = json.loads(raw_json_string)
+
+        # 2. Perform the write operation
+        with open(file_path, 'w') as f:
+            json.dump(data, f, indent=4)
+
+        return True, "Successfully updated"
+
+    except json.JSONDecodeError as e:
+        return False, f"Invalid JSON format: {str(e)}"
+    except IOError as e:
+        return False, f"File system error: {str(e)}"
+    except Exception as e:
+        return False, f"Unexpected error: {str(e)}"
