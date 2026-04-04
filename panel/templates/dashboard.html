@@ -10,7 +10,7 @@
     <div class="row">
         <div class="col-md-4 mb-4">
             <div class="card bg-dark text-white p-3">
-                <h5>Server Status</h5>
+                <h5 class="border-bottom border-secondary pb-2">Server Status</h5>
                 {% if is_running %}
                     <span class="badge bg-success">Online</span>
                 {% else %}
@@ -40,7 +40,7 @@
         </div>
         <div class="col-md-8">
             <div class="card p-3">
-                <h5>System Performance</h5>
+                <h5 class="border-bottom border-secondary pb-2">System Performance</h5>
                 <label>CPU Usage: {{ stats.cpu_pct }}%</label>
                 <div class="progress mb-2">
                     <div class="progress-bar" style="width: {{ stats.cpu_pct }}%"></div>
