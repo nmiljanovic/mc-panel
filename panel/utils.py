@@ -57,6 +57,11 @@ def read_properties(file_path):
                 key, value = line.split('=', 1)
                 config[key.strip()] = value.strip()
         return True, "", config
+
+    except PermissionError:
+        return False, "Permission denied. Check file permissions.", {}
+    except IOError as e:
+        return False, f"File system error: {str(e)}", {}
     except Exception as e:
         return False, f"Unable to read server.properties file: {str(e)}", {}
 
@@ -82,6 +87,11 @@ def save_properties(file_path, new_config):
         with open(file_path, 'w') as f:
             f.writelines(lines)
         return True, "Updated the server.properties file."
+
+    except PermissionError:
+        return False, "Permission denied. Check file permissions."
+    except IOError as e:
+        return False, f"File system error: {str(e)}"
     except Exception as e:
         return False, f"Unable to update server.properties file: {str(e)}"
 
@@ -90,10 +100,18 @@ def get_latest_logs(log_file_path, line_count=30):
     if not os.path.exists(log_file_path):
         return "No log file found. Start the server first."
 
-    with open(log_file_path, 'r') as f:
-        # Get the last N lines efficiently
-        lines = f.readlines()
-        return "".join(lines[-line_count:])
+    try:
+        with open(log_file_path, 'r') as f:
+            # Get the last N lines efficiently
+            lines = f.readlines()
+            return "".join(lines[-line_count:])
+
+    except PermissionError:
+        return False, "Permission denied. Check file permissions."
+    except IOError as e:
+        return False, f"File system error: {str(e)}"
+    except Exception as e:
+        return f"Unable to read log file: {str(e)}"
 
 
 def stop_bedrock_server():
@@ -195,18 +213,21 @@ def delete_world_dir(world_del_path, selected_world, active_world):
     # Delete world directory
     if is_server_running():
         return False, "Cannot delete world. Stop the server first."
-    if selected_world in active_world:
-        return False, "Cannot delete active world."
     if not os.path.exists(world_del_path):
         return False, "World directory does not exist."
+    if selected_world in active_world:
+        return False, "Cannot delete active world."
 
     try:
         shutil.rmtree(world_del_path)
         return True, "World successfully deleted."
+
     except PermissionError:
         return False, "Permission denied. Stop the server first."
+    except IOError as e:
+        return False, f"File system error: {str(e)}"
     except Exception as e:
-        return False, str(e)
+        return False, f"Unable to delete world: {str(e)}"
 
 
 def get_latest_version_url(wiki_url):
@@ -307,10 +328,14 @@ def get_json_data(file_path):
             json_data = json.load(f)
         return True, "", json_data
 
+    except PermissionError:
+        return False, "Permission denied. Check file permissions.", []
     except json.JSONDecodeError:
         return False, "File contains invalid JSON", []
     except IOError as e:
-        return False, f"Could not read file: {str(e)}", []
+        return False, f"File system error: {str(e)}", []
+    except Exception as e:
+        return False, f"Unable to read JSON file: {str(e)}", []
 
 
 def save_json_data(file_path, raw_json_string):
@@ -324,9 +349,11 @@ def save_json_data(file_path, raw_json_string):
 
         return True, "Successfully updated"
 
+    except PermissionError:
+        return False, "Permission denied. Check file permissions."
     except json.JSONDecodeError as e:
         return False, f"Invalid JSON format: {str(e)}"
     except IOError as e:
         return False, f"File system error: {str(e)}"
     except Exception as e:
-        return False, f"Unexpected error: {str(e)}"
+        return False, f"Unable to update JSON file: {str(e)}"
