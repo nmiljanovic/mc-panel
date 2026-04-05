@@ -107,9 +107,9 @@ def get_latest_logs(log_file_path, line_count=30):
             return "".join(lines[-line_count:])
 
     except PermissionError:
-        return False, "Permission denied. Check file permissions."
+        return "Permission denied. Check file permissions."
     except IOError as e:
-        return False, f"File system error: {str(e)}"
+        return f"File system error: {str(e)}"
     except Exception as e:
         return f"Unable to read log file: {str(e)}"
 
