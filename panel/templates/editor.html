@@ -8,7 +8,7 @@
         </ul>
     {% endif %}
     <div class="container mt-4">
-        <h3>Server Configuration</h3>
+        <h3>Allowlist & Permissions</h3>
         <form method="post" class="card p-4 shadow-sm">
             {% csrf_token %}
             <div class="row" style="display: flex; gap: 5px;">
@@ -18,6 +18,7 @@
                 <textarea name="allowlist_data"
                           rows="10"
                           style="width: 100%;
+                                 font-size: 10px;
                                  font-family: monospace">{{ allowlist }}</textarea>
                 <p class="text-muted" style="margin-top: 20px;">
                     Edit the <code>permissions.json</code> file here.
@@ -25,6 +26,7 @@
                 <textarea name="permissions_data"
                           rows="10"
                           style="width: 100%;
+                                 font-size: 10px;
                                  font-family: monospace">{{ permissions }}</textarea>
             </div>
             <div class="mt-4 border-top pt-3">
