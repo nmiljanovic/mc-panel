@@ -14,7 +14,7 @@ urlpatterns = [
         name='login'
     ),
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('settings/', views.edit_settings, name='edit_settings'),
+    path('settings/', views.manage_settings, name='manage_settings'),
     path('assets/', views.manage_assets, name='manage_assets'),
-    path('editor/', views.edit_configs, name='edit_configs')
+    path('access/', views.manage_access, name='manage_access')
 ]

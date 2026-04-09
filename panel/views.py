@@ -82,7 +82,7 @@ def dashboard(request):
 
 
 @login_required
-def edit_settings(request):
+def manage_settings(request):
     server_path = settings.SERVER_PATH
     prop_path = os.path.join(server_path, 'server.properties')
     if request.method == "POST":
@@ -166,7 +166,7 @@ def manage_assets(request):
 
 
 @login_required
-def edit_configs(request):
+def manage_access(request):
     server_path = settings.SERVER_PATH
     allowlist_path = os.path.join(server_path, 'allowlist.json')
     permissions_path = os.path.join(server_path, 'permissions.json')
@@ -191,7 +191,7 @@ def edit_configs(request):
         else:
             messages.error(request, f"{message} - permissions.json")
 
-        return redirect('edit_configs')
+        return redirect('manage_access')
 
     # GET request: Load current JSON data
     success, message, allowlist_data = get_json_data(allowlist_path)
@@ -206,4 +206,4 @@ def edit_configs(request):
         'allowlist': json.dumps(allowlist_data, indent=4),
         'permissions': json.dumps(permissions_data, indent=4),
     }
-    return render(request, 'editor.html', context)
+    return render(request, 'access.html', context)
