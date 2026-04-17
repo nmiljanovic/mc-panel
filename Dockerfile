@@ -13,7 +13,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Install pip requirements
 COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
+RUN python -m pip install -r requirements.txt && rm requirements.txt
 # ... other dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libcurl4 \
