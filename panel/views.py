@@ -19,7 +19,8 @@ from .utils import (
     update_bedrock_server,
     get_json_data,
     save_json_data,
-    live_world_backup
+    live_world_backup,
+    restore_world
 )
 
 
@@ -107,6 +108,7 @@ def manage_assets(request):
     server_path = settings.SERVER_PATH
     worlds_path = os.path.join(server_path, 'worlds')
     pipe_path = settings.PIPE_PATH
+    world_backup_path = settings.WORLD_BACKUP_PATH
 
     # Current active world
     active_world = read_properties(
@@ -120,25 +122,24 @@ def manage_assets(request):
             if os.path.isdir(os.path.join(worlds_path, d))
         ]
 
-    if request.method == "POST":
-        if 'upload_world' in request.POST:
-            world_file = request.FILES['world_file']
-            success, message = handle_world_upload(
-                server_path, worlds_path, world_file
-            )
-            # Add message to Django messages framework
-            if success:
-                messages.success(request, f"{message}")
-            else:
-                messages.error(request, f"{message}")
+    # List existing world backups for the "Restore World" dropdown
+    world_backups = ["No world backups directory found."]
+    if os.path.exists(world_backup_path):
+        world_backups = [
+            f for f in os.listdir(world_backup_path)
+            if f.lower().endswith('.zip') and
+            os.path.isfile(os.path.join(world_backup_path, f))
+        ]
 
-        elif 'set_world' in request.POST:
+    if request.method == "POST":
+        if 'set_world' in request.POST:
             selected_world = request.POST.get('world_name')
             # Use save_properties to update level-name
             success, message = save_properties(
                 os.path.join(server_path, 'server.properties'),
                 {'level-name': selected_world}
             )
+            # Django message framework
             if success:
                 messages.success(request, f"{message}")
             else:
@@ -170,10 +171,33 @@ def manage_assets(request):
             else:
                 messages.error(request, f"{message}")
 
+        elif 'restore_world' in request.POST:
+            selected_world = request.POST.get('world_backup_file')
+            success, message = restore_world(
+                selected_world, worlds_path, world_backup_path
+            )
+
+            if success:
+                messages.success(request, f"{message}")
+            else:
+                messages.error(request, f"{message}")
+
+        elif 'upload_world' in request.POST:
+            world_file = request.FILES['world_file']
+            success, message = handle_world_upload(
+                server_path, worlds_path, world_file
+            )
+            if success:
+                messages.success(request, f"{message}")
+            else:
+                messages.error(request, f"{message}")
+
         return redirect('manage_assets')
 
     return render(request, 'assets.html', {
-        'worlds': worlds, 'active_world': active_world
+        'worlds': worlds,
+        'active_world': active_world,
+        'world_backups': world_backups
     })
 
 

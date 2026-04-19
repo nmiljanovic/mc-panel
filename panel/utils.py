@@ -61,7 +61,7 @@ def read_properties(file_path):
 
     except PermissionError:
         return False, "Permission denied. Check file permissions.", {}
-    except IOError as e:
+    except OSError as e:
         return False, f"File system error: {str(e)}", {}
     except Exception as e:
         return False, f"Unable to read server.properties file: {str(e)}", {}
@@ -91,7 +91,7 @@ def save_properties(file_path, new_config):
 
     except PermissionError:
         return False, "Permission denied. Check file permissions."
-    except IOError as e:
+    except OSError as e:
         return False, f"File system error: {str(e)}"
     except Exception as e:
         return False, f"Unable to update server.properties file: {str(e)}"
@@ -109,7 +109,7 @@ def get_latest_logs(log_file_path, line_count=30):
 
     except PermissionError:
         return "Permission denied. Check file permissions."
-    except IOError as e:
+    except OSError as e:
         return f"File system error: {str(e)}"
     except Exception as e:
         return f"Unable to read log file: {str(e)}"
@@ -243,7 +243,7 @@ def delete_world_dir(world_del_path, selected_world, active_world):
 
     except PermissionError:
         return False, "Permission denied. Stop the server first."
-    except IOError as e:
+    except OSError as e:
         return False, f"File system error: {str(e)}"
     except Exception as e:
         return False, f"Unable to delete world: {str(e)}"
@@ -351,7 +351,7 @@ def get_json_data(file_path):
         return False, "Permission denied. Check file permissions.", []
     except json.JSONDecodeError:
         return False, "File contains invalid JSON", []
-    except IOError as e:
+    except OSError as e:
         return False, f"File system error: {str(e)}", []
     except Exception as e:
         return False, f"Unable to read JSON file: {str(e)}", []
@@ -372,7 +372,7 @@ def save_json_data(file_path, raw_json_string):
         return False, "Permission denied. Check file permissions."
     except json.JSONDecodeError as e:
         return False, f"Invalid JSON format: {str(e)}"
-    except IOError as e:
+    except OSError as e:
         return False, f"File system error: {str(e)}"
     except Exception as e:
         return False, f"Unable to update JSON file: {str(e)}"
@@ -397,15 +397,19 @@ def live_world_backup(server_path, pipe_path, selected_world, world_path):
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         backup_file = os.path.join(
             backup_path, f"{selected_world}_{timestamp}.zip")
+        # levelname_260419-102542 (world dir inside zip)
+        world_dir_timestamp = f"{selected_world}_{timestamp}"
 
         with zipfile.ZipFile(backup_file, 'w', zipfile.ZIP_DEFLATED) as zf:
             for root, dirs, files in os.walk(world_path):
                 for file in files:
                     full_path = os.path.join(root, file)
                     # rel_path doesn't include full OS paths
-                    rel_path = os.path.relpath(
-                        full_path, os.path.join(world_path, '..'))
-                    zf.write(full_path, rel_path)
+                    # rel_path = os.path.relpath(
+                    #    full_path, os.path.join(world_path, '..'))
+                    rel_path = os.path.relpath(full_path, world_path)
+                    final_path = os.path.join(world_dir_timestamp, rel_path)
+                    zf.write(full_path, final_path)
 
         # 3. Inject 'save resume'
         with open(pipe_path, "w") as pipe:
@@ -423,3 +427,17 @@ def live_world_backup(server_path, pipe_path, selected_world, world_path):
             pass
 
         return False, f"Unable to backup world: {str(e)}"
+
+
+def restore_world(selected_world, worlds_path, world_backup_path):
+    world_to_restore = os.path.join(world_backup_path, selected_world)
+
+    try:
+        with zipfile.ZipFile(world_to_restore, 'r') as zip_ref:
+            zip_ref.extractall(worlds_path)
+        return True, "World successfully restored. Change active."
+
+    except OSError as e:
+        return False, f"File system error: {str(e)}"
+    except Exception as e:
+        return False, f"Unable to restore world: {str(e)}"
