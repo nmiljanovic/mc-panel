@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import psutil
 import shutil
 import zipfile
@@ -112,6 +113,24 @@ def get_latest_logs(log_file_path, line_count=30):
         return f"File system error: {str(e)}"
     except Exception as e:
         return f"Unable to read log file: {str(e)}"
+
+
+def start_bedrock_server(server_path, pipe_path):
+    if not is_server_running():
+        # Check if pipe exists before starting the process
+        if not os.path.exists(pipe_path):
+            try:
+                os.mkfifo(pipe_path)
+            except OSError as e:
+                return False, f"Error creating pipe: {str(e)}"
+
+        # Stdin pipe for sending commands to live server
+        subprocess.Popen(
+            f"tail -f {pipe_path} | ./bedrock_server > server_output.log 2>&1",
+            cwd=server_path,
+            shell=True
+        )
+        return True, "Server successfully started."
 
 
 def stop_bedrock_server():
@@ -357,3 +376,50 @@ def save_json_data(file_path, raw_json_string):
         return False, f"File system error: {str(e)}"
     except Exception as e:
         return False, f"Unable to update JSON file: {str(e)}"
+
+
+def live_world_backup(server_path, pipe_path, selected_world, world_path):
+    # World backup path
+    backup_path = settings.WORLD_BACKUP_PATH
+    if not os.path.exists(backup_path):
+        os.makedirs(backup_path)
+
+    try:
+        # 1. Inject 'save hold' into the pipe
+        with open(pipe_path, "w") as pipe:
+            pipe.write("save hold\n")
+            pipe.flush()
+
+        # Allow time for Bedrock to flush files to disk
+        time.sleep(2)
+
+        # 2. Create the Zip file
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        backup_file = os.path.join(
+            backup_path, f"{selected_world}_{timestamp}.zip")
+
+        with zipfile.ZipFile(backup_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(world_path):
+                for file in files:
+                    full_path = os.path.join(root, file)
+                    # rel_path doesn't include full OS paths
+                    rel_path = os.path.relpath(
+                        full_path, os.path.join(world_path, '..'))
+                    zf.write(full_path, rel_path)
+
+        # 3. Inject 'save resume'
+        with open(pipe_path, "w") as pipe:
+            pipe.write("save resume\n")
+            pipe.flush()
+
+        return True, "World successfully backed up."
+
+    except Exception as e:
+        # Emergency resume attempt
+        try:
+            with open(pipe_path, "w") as pipe:
+                pipe.write("save resume\n")
+        except OSError:
+            pass
+
+        return False, f"Unable to backup world: {str(e)}"

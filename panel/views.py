@@ -1,6 +1,5 @@
 import os
 import json
-import subprocess
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -12,13 +11,15 @@ from .utils import (
     read_properties,
     save_properties,
     is_server_running,
+    start_bedrock_server,
     stop_bedrock_server,
     get_latest_logs,
     handle_world_upload,
     delete_world_dir,
     update_bedrock_server,
     get_json_data,
-    save_json_data
+    save_json_data,
+    live_world_backup
 )
 
 
@@ -48,17 +49,14 @@ class LoginForm(AuthenticationForm):
 @login_required
 def dashboard(request):
     server_path = settings.SERVER_PATH
+    pipe_path = settings.PIPE_PATH
     wiki_url = settings.WIKI_URL
     stats = get_server_stats()
     if request.method == "POST":
         if 'start' in request.POST.get("action"):
-            if not is_server_running():
-                # Popen start logic here
-                subprocess.Popen(
-                    './bedrock_server > server_output.log 2>&1',
-                    cwd=server_path,
-                    shell=True
-                )
+            success, message = start_bedrock_server(server_path, pipe_path)
+            if not success:
+                messages.error(request, f"{message}")
 
         elif 'stop' in request.POST.get("action"):
             stop_bedrock_server()
@@ -108,6 +106,7 @@ def manage_settings(request):
 def manage_assets(request):
     server_path = settings.SERVER_PATH
     worlds_path = os.path.join(server_path, 'worlds')
+    pipe_path = settings.PIPE_PATH
 
     # Current active world
     active_world = read_properties(
@@ -151,6 +150,19 @@ def manage_assets(request):
                 server_path, 'worlds', selected_world)
             success, message = delete_world_dir(
                 world_del_path, selected_world, active_world
+            )
+
+            if success:
+                messages.success(request, f"{message}")
+            else:
+                messages.error(request, f"{message}")
+
+        elif 'backup_world' in request.POST:
+            selected_world = request.POST.get('world_name')
+            world_path = os.path.join(
+                server_path, 'worlds', selected_world)
+            success, message = live_world_backup(
+                server_path, pipe_path, selected_world, world_path
             )
 
             if success:

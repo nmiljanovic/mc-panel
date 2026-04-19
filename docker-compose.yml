@@ -7,6 +7,7 @@ services:
       - /home/$USER/mc_panel/.env
     volumes:
       - /home/$USER/minecraft:/minecraft
+      - /home/$USER/world_backups:/world_backups
     ports:
       - "127.0.0.1:$PORT:$PORT/tcp"
       - "127.0.0.1:$PORT:$MCPORT/udp"
