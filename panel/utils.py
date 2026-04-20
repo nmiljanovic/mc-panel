@@ -219,10 +219,10 @@ def handle_world_upload(server_path, worlds_path, world_file):
                             open(target_p, "wb") as target:
                         shutil.copyfileobj(source, target)
 
-        return True, f"World '{world_name}' imported successfully."
+        return True, "World successfully imported."
 
     except Exception as e:
-        return False, f"World import error: {str(e)}"
+        return False, f"Unable to import world: {str(e)}"
     finally:
         if os.path.exists(temp_path):
             os.remove(temp_path)
@@ -335,7 +335,7 @@ def update_bedrock_server(server_path, wiki_url):
         os.chmod(binary_path, 0o755)
 
     shutil.rmtree(temp_path)
-    return True, "Server updated successfully."
+    return True, "Server successfully updated."
 
 
 def get_json_data(file_path):
