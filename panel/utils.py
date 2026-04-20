@@ -87,7 +87,7 @@ def save_properties(file_path, new_config):
 
         with open(file_path, 'w') as f:
             f.writelines(lines)
-        return True, "Updated the server.properties file."
+        return True, "Successfully updated server.properties file."
 
     except PermissionError:
         return False, "Permission denied. Check file permissions."
@@ -122,7 +122,7 @@ def start_bedrock_server(server_path, pipe_path):
             try:
                 os.mkfifo(pipe_path)
             except OSError as e:
-                return False, f"Error creating pipe: {str(e)}"
+                return False, f"Unable to create stdin pipe: {str(e)}"
 
         # Stdin pipe for sending commands to live server
         subprocess.Popen(
@@ -270,7 +270,7 @@ def get_latest_version_url(wiki_url):
         return stable_link[-1] if stable_link else None
 
     except Exception as e:
-        return False, f"Error fetching url from wiki: {str(e)}"
+        return False, f"Unable to fetch url from wiki: {str(e)}"
         return None
 
 
