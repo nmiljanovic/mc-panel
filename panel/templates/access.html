@@ -7,35 +7,79 @@
             {% endfor %}
         </ul>
     {% endif %}
-    <div class="container mt-4">
-        <h3>Allowlist & Permissions</h3>
-        <form method="post" class="card p-4 shadow-sm">
-            {% csrf_token %}
-            <div class="row" style="display: flex; gap: 5px;">
-                <p class="text-muted">
-                    Edit the <code>allowlist.json</code> file here.
-                </p>
-                <textarea name="allowlist_data"
-                          rows="10"
-                          style="width: 100%;
-                                 font-size: 10px;
-                                 font-family: monospace">{{ allowlist }}</textarea>
-                <p class="text-muted" style="margin-top: 20px;">
-                    Edit the <code>permissions.json</code> file here.
-                </p>
-                <textarea name="permissions_data"
-                          rows="10"
-                          style="width: 100%;
-                                 font-size: 10px;
-                                 font-family: monospace">{{ permissions }}</textarea>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Player Access Control</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 border-end">
+                    <h6>Allowlist Management</h6>
+                    <form method="post" class="input-group mb-2">
+                        {% csrf_token %}
+                        <input type="text"
+                               name="player_name"
+                               class="form-control"
+                               placeholder="Gamertag ... must be valid">
+                        <button name="action" value="add" class="btn btn-success btn-sm">Add</button>
+                        <button name="action" value="remove" class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button name="action"
+                                value="reload"
+                                class="btn btn-outline-secondary btn-sm w-100">Reload allowlist.json</button>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <h6>Player Permissions</h6>
+                    <form method="post" class="input-group">
+                        {% csrf_token %}
+                        <input type="text"
+                               name="player_name"
+                               class="form-control"
+                               placeholder="Gamertag ... must be online">
+                        <button name="action" value="op" class="btn btn-primary btn-sm">Make OP</button>
+                        <button name="action" value="deop" class="btn btn-warning btn-sm">De-OP</button>
+                    </form>
+                    <small class="text-muted mt-2 d-block">Note: OP status grants full admin commands.</small>
+                </div>
             </div>
-            <div class="mt-4 border-top pt-3">
-                <button type="submit" class="btn btn-success">Save Changes</button>
-                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Allowlist & Permissions</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <form method="post">
+                    {% csrf_token %}
+                    <p class="text-muted">
+                        Edit the <code>allowlist.json</code> file here.
+                    </p>
+                    <textarea name="allowlist_data"
+                              rows="10"
+                              style="width: 100%;
+                                     font-size: 10px;
+                                     font-family: monospace">{{ allowlist }}</textarea>
+                    <p class="text-muted" style="margin-top: 20px;">
+                        Edit the <code>permissions.json</code> file here.
+                    </p>
+                    <textarea name="permissions_data"
+                              rows="10"
+                              style="width: 100%;
+                                     font-size: 10px;
+                                     font-family: monospace">{{ permissions }}</textarea>
+                    <div class="mt-4 border-top pt-3">
+                        <button name="action" value="submit" class="btn btn-success">Save Changes</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                    <div class="alert alert-warning mt-3">
+                        <strong>Note:</strong> Restart server after saving changes.
+                    </div>
+                </form>
             </div>
-        </form>
-        <div class="alert alert-warning mt-3">
-            <strong>Note:</strong> Restart server after saving changes.
         </div>
     </div>
 {% endblock %}

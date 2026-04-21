@@ -11,6 +11,7 @@ STATIC_ROOT = config('STATIC_PATH')
 WIKI_URL = config('WIKI_URL')
 WORLD_BACKUP_PATH = config('WORLD_BACKUP_PATH')
 PIPE_PATH = config('PIPE_PATH')
+LOG_FILE = config('LOG_FILE')
 
 # Security settings for HTTPS
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)

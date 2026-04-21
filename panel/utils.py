@@ -97,12 +97,12 @@ def save_properties(file_path, new_config):
         return False, f"Unable to update server.properties file: {str(e)}"
 
 
-def get_latest_logs(log_file_path, line_count=30):
-    if not os.path.exists(log_file_path):
+def get_latest_logs(log_file, line_count=30):
+    if not os.path.exists(log_file):
         return "No log file found. Start the server first."
 
     try:
-        with open(log_file_path, 'r') as f:
+        with open(log_file, 'r') as f:
             # Get the last N lines efficiently
             lines = f.readlines()
             return "".join(lines[-line_count:])
@@ -116,6 +116,7 @@ def get_latest_logs(log_file_path, line_count=30):
 
 
 def start_bedrock_server(server_path, pipe_path):
+    log_file = os.path.join(server_path, settings.LOG_FILE)
     if not is_server_running():
         # Check if pipe exists before starting the process
         if not os.path.exists(pipe_path):
@@ -126,7 +127,7 @@ def start_bedrock_server(server_path, pipe_path):
 
         # Stdin pipe for sending commands to live server
         subprocess.Popen(
-            f"tail -f {pipe_path} | ./bedrock_server > server_output.log 2>&1",
+            f"tail -f {pipe_path} | ./bedrock_server > {log_file} 2>&1",
             cwd=server_path,
             shell=True
         )
@@ -250,7 +251,6 @@ def delete_world_dir(world_del_path, selected_world, active_world):
 
 
 def get_latest_version_url(wiki_url):
-
     try:
         # 1. Fetch the HTML
         req = urllib.request.Request(
@@ -385,38 +385,41 @@ def live_world_backup(server_path, pipe_path, selected_world, world_path):
         os.makedirs(backup_path)
 
     try:
-        # 1. Inject 'save hold' into the pipe
-        with open(pipe_path, "w") as pipe:
-            pipe.write("save hold\n")
-            pipe.flush()
+        if is_server_running():
+            # 1. Inject 'save hold' into the pipe
+            with open(pipe_path, "w") as pipe:
+                pipe.write("save hold\n")
+                pipe.flush()
 
-        # Allow time for Bedrock to flush files to disk
-        time.sleep(2)
+            # Allow time for Bedrock to flush files to disk
+            time.sleep(1)
 
-        # 2. Create the Zip file
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        backup_file = os.path.join(
-            backup_path, f"{selected_world}_{timestamp}.zip")
-        # levelname_260419-102542 (world dir inside zip)
-        world_dir_timestamp = f"{selected_world}_{timestamp}"
+            # 2. Create the Zip file
+            timestamp = time.strftime("%Y%m%d-%H%M%S")
+            backup_file = os.path.join(
+                backup_path, f"{selected_world}_{timestamp}.zip")
+            # levelname_260419-102542 (world dir inside zip)
+            world_dir_timestamp = f"{selected_world}_{timestamp}"
 
-        with zipfile.ZipFile(backup_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for root, dirs, files in os.walk(world_path):
-                for file in files:
-                    full_path = os.path.join(root, file)
-                    # rel_path doesn't include full OS paths
-                    # rel_path = os.path.relpath(
-                    #    full_path, os.path.join(world_path, '..'))
-                    rel_path = os.path.relpath(full_path, world_path)
-                    final_path = os.path.join(world_dir_timestamp, rel_path)
-                    zf.write(full_path, final_path)
+            with zipfile.ZipFile(backup_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+                for root, dirs, files in os.walk(world_path):
+                    for file in files:
+                        full_path = os.path.join(root, file)
+                        # rel_path doesn't include full OS paths
+                        # rel_path = os.path.relpath(
+                        #    full_path, os.path.join(world_path, '..'))
+                        rel_path = os.path.relpath(full_path, world_path)
+                        set_path = os.path.join(world_dir_timestamp, rel_path)
+                        zf.write(full_path, set_path)
 
-        # 3. Inject 'save resume'
-        with open(pipe_path, "w") as pipe:
-            pipe.write("save resume\n")
-            pipe.flush()
+            # 3. Inject 'save resume'
+            with open(pipe_path, "w") as pipe:
+                pipe.write("save resume\n")
+                pipe.flush()
 
-        return True, "World successfully backed up."
+            return True, "World successfully backed up."
+        else:
+            return False, "Server is stopped. Start the server first."
 
     except Exception as e:
         # Emergency resume attempt
@@ -441,3 +444,36 @@ def restore_world(selected_world, worlds_path, world_backup_path):
         return False, f"File system error: {str(e)}"
     except Exception as e:
         return False, f"Unable to restore world: {str(e)}"
+
+
+def player_access_control(command, pipe_path, log_file):
+    try:
+        if is_server_running():
+            # Send command to stdin pipe
+            with open(pipe_path, 'w') as pipe:
+                pipe.write(f"{command}\n")
+                pipe.flush()
+
+            time.sleep(1)
+
+            if os.path.exists(log_file):
+                with open(log_file, 'r') as f:
+                    lines = f.readlines()
+                    if not lines:
+                        return False, "Server log is empty."
+
+                    last_line = lines[-1].strip()
+
+                    # BDS output looks like: [2026-04-21 14:00:00:000 INFO]
+                    if "INFO" in last_line:
+                        return True, f"{last_line}"
+                    elif "ERROR" in last_line:
+                        return False, f"{last_line}"
+            return False, f"Cannot find {log_file}"
+        else:
+            return False, "Server is stopped. Start the server first."
+
+    except OSError as e:
+        return False, f"File system error: {str(e)}"
+    except Exception as e:
+        return False, f"Error sending command: {str(e)}"

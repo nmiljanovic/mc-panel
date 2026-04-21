@@ -20,7 +20,8 @@ from .utils import (
     get_json_data,
     save_json_data,
     live_world_backup,
-    restore_world
+    restore_world,
+    player_access_control
 )
 
 
@@ -51,8 +52,10 @@ class LoginForm(AuthenticationForm):
 def dashboard(request):
     server_path = settings.SERVER_PATH
     pipe_path = settings.PIPE_PATH
+    log_file = os.path.join(server_path, settings.LOG_FILE)
     wiki_url = settings.WIKI_URL
     stats = get_server_stats()
+
     if request.method == "POST":
         if 'start' in request.POST.get("action"):
             success, message = start_bedrock_server(server_path, pipe_path)
@@ -76,7 +79,7 @@ def dashboard(request):
     return render(request, 'dashboard.html', {
         'stats': stats,
         'is_running': running_status,
-        'logs': get_latest_logs(os.path.join(server_path, 'server_output.log'))
+        'logs': get_latest_logs(os.path.join(server_path, f"{log_file}"))
     })
 
 
@@ -204,10 +207,12 @@ def manage_assets(request):
 @login_required
 def manage_access(request):
     server_path = settings.SERVER_PATH
+    log_file = os.path.join(server_path, settings.LOG_FILE)
+    pipe_path = settings.PIPE_PATH
     allowlist_path = os.path.join(server_path, 'allowlist.json')
     permissions_path = os.path.join(server_path, 'permissions.json')
 
-    if request.method == 'POST':
+    if request.method == "POST" and request.POST.get("action") == 'submit':
         # Get the raw string from the textarea
         allowlist_raw = request.POST.get('allowlist_data')
         permissions_raw = request.POST.get('permissions_data')
@@ -226,6 +231,27 @@ def manage_access(request):
             messages.success(request, f"{message} permissions.json file.")
         else:
             messages.error(request, f"{message} - permissions.json")
+
+        return redirect('manage_access')
+
+    # Player access control (add,remove,op,deop,reload)
+    elif request.method == "POST":
+        player_name = request.POST.get("player_name")
+        action = request.POST.get("action")
+
+        if action == "reload":
+            command = "allowlist reload"
+        elif action == "add" or action == "remove":
+            command = f'allowlist {action} "{player_name}"'
+        elif action == "op" or action == "deop":
+            command = f'{action} "{player_name}"'
+
+        success, message = player_access_control(command, pipe_path, log_file)
+        if success:
+            messages.success(request, "Player access successfully updated.")
+        if not success:
+            messages.error(
+                request, f"Unable to update player access: {message}")
 
         return redirect('manage_access')
 
