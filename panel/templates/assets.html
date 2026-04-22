@@ -7,16 +7,18 @@
             {% endfor %}
         </ul>
     {% endif %}
-    <div class="row">
-        <h3>World Settings</h3>
-        <p class="text-muted">
-            Edit the <code>world.settings</code> here.
-        </p>
-        <div class="col-md-6 mb-4">
-            <div class="card p-3">
-                <h5>
-                    Active World <small>({{ active_world|default:"Unknown" }})</small>
-                </h5>
+    <h3>World Settings</h3>
+    <p class="text-muted">
+        Edit the <code>world.settings</code> here.
+    </p>
+    <div class="card shadow-sm col-md-6 mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                Active World <small>({{ active_world|default:"Unknown" }})</small>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
                 <form method="post">
                     {% csrf_token %}
                     <select name="world_name" class="form-select mb-3">
@@ -30,11 +32,15 @@
                 </form>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card p-3">
-                <h5>
-                    Restore World <small>(from backup)</small>
-                </h5>
+    </div>
+    <div class="card shadow-sm col-md-6 mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                Restore World <small>(from backup)</small>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
                 <form method="post">
                     {% csrf_token %}
                     <select name="world_backup_file" class="form-select mb-3">
@@ -44,11 +50,15 @@
                 </form>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card p-3">
-                <h5>
-                    Install World <small>(.mcworld)</small>
-                </h5>
+    </div>
+    <div class="card shadow-sm col-md-6 mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                Install World <small>(.mcworld)</small>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="file"

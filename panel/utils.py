@@ -132,18 +132,23 @@ def start_bedrock_server(server_path, pipe_path):
             shell=True
         )
         return True, "Server successfully started."
+    else:
+        return False, "Server is already started."
 
 
-def stop_bedrock_server():
-    # Look for the process by name
-    for proc in psutil.process_iter(['name', 'pid']):
-        try:
-            if 'bedrock_server' in proc.info['name']:
-                proc.terminate()  # Send the stop signal
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
-    return False
+def stop_bedrock_server(process_name):
+    if is_server_running():
+        # Look for the process by name
+        for proc in psutil.process_iter(['name', 'pid']):
+            try:
+                if process_name in proc.info['name']:
+                    proc.terminate()  # Send the stop signal
+                    return True, "Server successfully stopped."
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        return False, "Cannot find server process."
+    else:
+        return False, "Server is already stoppped."
 
 
 def is_server_running():

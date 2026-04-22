@@ -55,6 +55,7 @@ def dashboard(request):
     log_file = os.path.join(server_path, settings.LOG_FILE)
     wiki_url = settings.WIKI_URL
     stats = get_server_stats()
+    process_name = 'bedrock_server'
 
     if request.method == "POST":
         if 'start' in request.POST.get("action"):
@@ -63,7 +64,9 @@ def dashboard(request):
                 messages.error(request, f"{message}")
 
         elif 'stop' in request.POST.get("action"):
-            stop_bedrock_server()
+            success, message = stop_bedrock_server(process_name)
+            if not success:
+                messages.error(request, f"{message}")
 
         elif 'update' in request.POST.get("action"):
             success, message = update_bedrock_server(server_path, wiki_url)
@@ -209,8 +212,8 @@ def manage_access(request):
     server_path = settings.SERVER_PATH
     log_file = os.path.join(server_path, settings.LOG_FILE)
     pipe_path = settings.PIPE_PATH
-    allowlist_path = os.path.join(server_path, 'allowlist.json')
-    permissions_path = os.path.join(server_path, 'permissions.json')
+    allowlist_file = os.path.join(server_path, 'allowlist.json')
+    permissions_file = os.path.join(server_path, 'permissions.json')
 
     if request.method == "POST" and request.POST.get("action") == 'submit':
         # Get the raw string from the textarea
@@ -218,14 +221,14 @@ def manage_access(request):
         permissions_raw = request.POST.get('permissions_data')
 
         # Validate and save Allowlist, Permissions
-        success, message = save_json_data(allowlist_path, allowlist_raw)
+        success, message = save_json_data(allowlist_file, allowlist_raw)
 
         if success:
             messages.success(request, f"{message} allowlist.json file.")
         else:
             messages.error(request, f"{message} - allowlist.json")
 
-        success, message = save_json_data(permissions_path, permissions_raw)
+        success, message = save_json_data(permissions_file, permissions_raw)
 
         if success:
             messages.success(request, f"{message} permissions.json file.")
@@ -256,11 +259,11 @@ def manage_access(request):
         return redirect('manage_access')
 
     # GET request: Load current JSON data
-    success, message, allowlist_data = get_json_data(allowlist_path)
+    success, message, allowlist_data = get_json_data(allowlist_file)
     if not success:
         messages.error(request, f"{message} - allowlist.json")
 
-    success, message, permissions_data = get_json_data(permissions_path)
+    success, message, permissions_data = get_json_data(permissions_file)
     if not success:
         messages.error(request, f"{message} - permissions.json")
 
