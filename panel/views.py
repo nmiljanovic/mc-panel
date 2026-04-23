@@ -59,7 +59,8 @@ def dashboard(request):
 
     if request.method == "POST":
         if 'start' in request.POST.get("action"):
-            success, message = start_bedrock_server(server_path, pipe_path)
+            success, message = start_bedrock_server(
+                server_path, pipe_path, log_file)
             if not success:
                 messages.error(request, f"{message}")
 
@@ -100,7 +101,8 @@ def manage_settings(request):
         if success:
             messages.success(request, f"{message}")
         else:
-            messages.error(request, f"{message}")
+            messages.error(
+                request, f"Unable to update server.properties file: {message}")
 
     success, message, current_settings = read_properties(prop_path)
     if not success:
@@ -147,9 +149,9 @@ def manage_assets(request):
             )
             # Django message framework
             if success:
-                messages.success(request, f"{message}")
+                messages.success(request, "Active world successfully changed.")
             else:
-                messages.error(request, f"{message}")
+                messages.error(request, f"Unable to change world: {message}")
 
         elif 'delete_world' in request.POST:
             selected_world = request.POST.get('world_name')

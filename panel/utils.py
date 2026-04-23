@@ -73,28 +73,31 @@ def save_properties(file_path, new_config):
 
     lines = []
     # Read existing lines to preserve comments
-    try:
-        with open(file_path, 'r') as f:
-            for line in f:
-                if line.startswith('#') or '=' not in line:
-                    lines.append(line)
-                    continue
-                key = line.split('=', 1)[0].strip()
-                if key in new_config:
-                    lines.append(f"{key}={new_config[key]}\n")
-                else:
-                    lines.append(line)
+    if not is_server_running():
+        try:
+            with open(file_path, 'r') as f:
+                for line in f:
+                    if line.startswith('#') or '=' not in line:
+                        lines.append(line)
+                        continue
+                    key = line.split('=', 1)[0].strip()
+                    if key in new_config:
+                        lines.append(f"{key}={new_config[key]}\n")
+                    else:
+                        lines.append(line)
 
-        with open(file_path, 'w') as f:
-            f.writelines(lines)
-        return True, "Successfully updated server.properties file."
+            with open(file_path, 'w') as f:
+                f.writelines(lines)
+            return True, "Successfully updated server.properties file."
 
-    except PermissionError:
-        return False, "Permission denied. Check file permissions."
-    except OSError as e:
-        return False, f"File system error: {str(e)}"
-    except Exception as e:
-        return False, f"Unable to update server.properties file: {str(e)}"
+        except PermissionError:
+            return False, "Permission denied. Check file permissions."
+        except OSError as e:
+            return False, f"File system error: {str(e)}"
+        except Exception as e:
+            return False, f"Unable to update server.properties file: {str(e)}"
+    else:
+        return False, "Stop the server first."
 
 
 def get_latest_logs(log_file, line_count=30):
@@ -115,23 +118,31 @@ def get_latest_logs(log_file, line_count=30):
         return f"Unable to read log file: {str(e)}"
 
 
-def start_bedrock_server(server_path, pipe_path):
-    log_file = os.path.join(server_path, settings.LOG_FILE)
+def start_bedrock_server(server_path, pipe_path, log_file):
     if not is_server_running():
         # Check if pipe exists before starting the process
         if not os.path.exists(pipe_path):
             try:
                 os.mkfifo(pipe_path)
+
+            except PermissionError:
+                return False, "Permission denied. Check file permissions."
             except OSError as e:
                 return False, f"Unable to create stdin pipe: {str(e)}"
+            except Exception as e:
+                return False, f"Unable to start the server: {str(e)}"
 
-        # Stdin pipe for sending commands to live server
-        subprocess.Popen(
-            f"tail -f {pipe_path} | ./bedrock_server > {log_file} 2>&1",
-            cwd=server_path,
-            shell=True
-        )
-        return True, "Server successfully started."
+        try:
+            # Stdin pipe for sending commands to live server
+            subprocess.Popen(
+                f"tail -f {pipe_path} | ./bedrock_server > {log_file} 2>&1",
+                cwd=server_path,
+                shell=True
+            )
+            return True, "Server successfully started."
+
+        except Exception as e:
+            return False, f"Unable to start the server: {str(e)}"
     else:
         return False, "Server is already started."
 
@@ -145,8 +156,9 @@ def stop_bedrock_server(process_name):
                     proc.terminate()  # Send the stop signal
                     return True, "Server successfully stopped."
             except (psutil.NoSuchProcess, psutil.AccessDenied):
-                pass
-        return False, "Cannot find server process."
+                return False, "Cannot find server process."
+            except Exception as e:
+                return False, f"Unable to stop the server: {str(e)}"
     else:
         return False, "Server is already stoppped."
 
