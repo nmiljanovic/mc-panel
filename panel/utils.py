@@ -71,33 +71,33 @@ def save_properties(file_path, new_config):
     if not os.path.exists(file_path):
         return False, "No server.properties file found."
 
+    if is_server_running():
+        return False, "Stop the server first."
+
     lines = []
     # Read existing lines to preserve comments
-    if not is_server_running():
-        try:
-            with open(file_path, 'r') as f:
-                for line in f:
-                    if line.startswith('#') or '=' not in line:
-                        lines.append(line)
-                        continue
-                    key = line.split('=', 1)[0].strip()
-                    if key in new_config:
-                        lines.append(f"{key}={new_config[key]}\n")
-                    else:
-                        lines.append(line)
+    try:
+        with open(file_path, 'r') as f:
+            for line in f:
+                if line.startswith('#') or '=' not in line:
+                    lines.append(line)
+                    continue
+                key = line.split('=', 1)[0].strip()
+                if key in new_config:
+                    lines.append(f"{key}={new_config[key]}\n")
+                else:
+                    lines.append(line)
 
-            with open(file_path, 'w') as f:
-                f.writelines(lines)
-            return True, "Successfully updated server.properties file."
+        with open(file_path, 'w') as f:
+            f.writelines(lines)
+        return True, "Successfully updated server.properties file."
 
-        except PermissionError:
-            return False, "Permission denied. Check file permissions."
-        except OSError as e:
-            return False, f"File system error: {str(e)}"
-        except Exception as e:
-            return False, f"Unable to update server.properties file: {str(e)}"
-    else:
-        return False, "Stop the server first."
+    except PermissionError:
+        return False, "Permission denied. Check file permissions."
+    except OSError as e:
+        return False, f"File system error: {str(e)}"
+    except Exception as e:
+        return False, f"Error: {str(e)}"
 
 
 def get_latest_logs(log_file, line_count=30):
@@ -150,6 +150,7 @@ def start_bedrock_server(server_path, pipe_path, log_file):
 def stop_bedrock_server(process_name):
     if not is_server_running():
         return False, "Server is already stoppped."
+
     # Look for the process by name
     for proc in psutil.process_iter(['name', 'pid']):
         try:
@@ -465,6 +466,7 @@ def restore_world(selected_world, worlds_path, world_backup_path):
 def player_access_control(command, pipe_path, log_file):
     if not is_server_running():
         return False, "Server is stopped. Start the server first."
+
     try:
         # Send command to stdin pipe
         with open(pipe_path, 'w') as pipe:
