@@ -119,48 +119,47 @@ def get_latest_logs(log_file, line_count=30):
 
 
 def start_bedrock_server(server_path, pipe_path, log_file):
-    if not is_server_running():
-        # Check if pipe exists before starting the process
-        if not os.path.exists(pipe_path):
-            try:
-                os.mkfifo(pipe_path)
+    if is_server_running():
+        return False, "Server is already started."
 
-            except PermissionError:
-                return False, "Permission denied. Check file permissions."
-            except OSError as e:
-                return False, f"Unable to create stdin pipe: {str(e)}"
-            except Exception as e:
-                return False, f"Unable to start the server: {str(e)}"
-
+    # Check if pipe exists before starting the process
+    if not os.path.exists(pipe_path):
         try:
-            # Stdin pipe for sending commands to live server
-            subprocess.Popen(
-                f"tail -f {pipe_path} | ./bedrock_server > {log_file} 2>&1",
-                cwd=server_path,
-                shell=True
-            )
-            return True, "Server successfully started."
+            os.mkfifo(pipe_path)
 
+        except PermissionError:
+            return False, "Permission denied. Check file permissions."
+        except OSError as e:
+            return False, f"Unable to create stdin pipe: {str(e)}"
         except Exception as e:
             return False, f"Unable to start the server: {str(e)}"
-    else:
-        return False, "Server is already started."
+
+    try:
+        # Stdin pipe for sending commands to live server
+        subprocess.Popen(
+            f"tail -f {pipe_path} | ./bedrock_server > {log_file} 2>&1",
+            cwd=server_path,
+            shell=True
+        )
+        return True, "Server successfully started."
+
+    except Exception as e:
+        return False, f"Unable to start the server: {str(e)}"
 
 
 def stop_bedrock_server(process_name):
-    if is_server_running():
-        # Look for the process by name
-        for proc in psutil.process_iter(['name', 'pid']):
-            try:
-                if process_name in proc.info['name']:
-                    proc.terminate()  # Send the stop signal
-                    return True, "Server successfully stopped."
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                return False, "Cannot find server process."
-            except Exception as e:
-                return False, f"Unable to stop the server: {str(e)}"
-    else:
+    if not is_server_running():
         return False, "Server is already stoppped."
+    # Look for the process by name
+    for proc in psutil.process_iter(['name', 'pid']):
+        try:
+            if process_name in proc.info['name']:
+                proc.terminate()  # Send the stop signal
+                return True, "Server successfully stopped."
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            return False, "Cannot find server process."
+        except Exception as e:
+            return False, f"Unable to stop the server: {str(e)}"
 
 
 def is_server_running():
@@ -396,47 +395,47 @@ def save_json_data(file_path, raw_json_string):
 
 
 def live_world_backup(server_path, pipe_path, selected_world, world_path):
+    if not is_server_running():
+        return False, "Server is stopped. Start the server first."
+
     # World backup path
     backup_path = settings.WORLD_BACKUP_PATH
     if not os.path.exists(backup_path):
         os.makedirs(backup_path)
 
     try:
-        if is_server_running():
-            # 1. Inject 'save hold' into the pipe
-            with open(pipe_path, "w") as pipe:
-                pipe.write("save hold\n")
-                pipe.flush()
+        # 1. Inject 'save hold' into the pipe
+        with open(pipe_path, "w") as pipe:
+            pipe.write("save hold\n")
+            pipe.flush()
 
-            # Allow time for Bedrock to flush files to disk
-            time.sleep(1)
+        # Allow time for Bedrock to flush files to disk
+        time.sleep(1)
 
-            # 2. Create the Zip file
-            timestamp = time.strftime("%Y%m%d-%H%M%S")
-            backup_file = os.path.join(
-                backup_path, f"{selected_world}_{timestamp}.zip")
-            # levelname_260419-102542 (world dir inside zip)
-            world_dir_timestamp = f"{selected_world}_{timestamp}"
+        # 2. Create the Zip file
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        backup_file = os.path.join(
+            backup_path, f"{selected_world}_{timestamp}.zip")
+        # levelname_260419-102542 (world dir inside zip)
+        world_dir_timestamp = f"{selected_world}_{timestamp}"
 
-            with zipfile.ZipFile(backup_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-                for root, dirs, files in os.walk(world_path):
-                    for file in files:
-                        full_path = os.path.join(root, file)
-                        # rel_path doesn't include full OS paths
-                        # rel_path = os.path.relpath(
-                        #    full_path, os.path.join(world_path, '..'))
-                        rel_path = os.path.relpath(full_path, world_path)
-                        set_path = os.path.join(world_dir_timestamp, rel_path)
-                        zf.write(full_path, set_path)
+        with zipfile.ZipFile(backup_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(world_path):
+                for file in files:
+                    full_path = os.path.join(root, file)
+                    # rel_path doesn't include full OS paths
+                    # rel_path = os.path.relpath(
+                    #    full_path, os.path.join(world_path, '..'))
+                    rel_path = os.path.relpath(full_path, world_path)
+                    set_path = os.path.join(world_dir_timestamp, rel_path)
+                    zf.write(full_path, set_path)
 
-            # 3. Inject 'save resume'
-            with open(pipe_path, "w") as pipe:
-                pipe.write("save resume\n")
-                pipe.flush()
+        # 3. Inject 'save resume'
+        with open(pipe_path, "w") as pipe:
+            pipe.write("save resume\n")
+            pipe.flush()
 
-            return True, "World successfully backed up."
-        else:
-            return False, "Server is stopped. Start the server first."
+        return True, "World successfully backed up."
 
     except Exception as e:
         # Emergency resume attempt
@@ -464,31 +463,30 @@ def restore_world(selected_world, worlds_path, world_backup_path):
 
 
 def player_access_control(command, pipe_path, log_file):
+    if not is_server_running():
+        return False, "Server is stopped. Start the server first."
     try:
-        if is_server_running():
-            # Send command to stdin pipe
-            with open(pipe_path, 'w') as pipe:
-                pipe.write(f"{command}\n")
-                pipe.flush()
+        # Send command to stdin pipe
+        with open(pipe_path, 'w') as pipe:
+            pipe.write(f"{command}\n")
+            pipe.flush()
 
-            time.sleep(1)
+        time.sleep(1)
 
-            if os.path.exists(log_file):
-                with open(log_file, 'r') as f:
-                    lines = f.readlines()
-                    if not lines:
-                        return False, "Server log is empty."
+        if os.path.exists(log_file):
+            with open(log_file, 'r') as f:
+                lines = f.readlines()
+                if not lines:
+                    return False, "Server log is empty."
 
-                    last_line = lines[-1].strip()
+                last_line = lines[-1].strip()
 
-                    # BDS output looks like: [2026-04-21 14:00:00:000 INFO]
-                    if "INFO" in last_line:
-                        return True, f"{last_line}"
-                    elif "ERROR" in last_line:
-                        return False, f"{last_line}"
-            return False, f"Cannot find {log_file}"
-        else:
-            return False, "Server is stopped. Start the server first."
+                # BDS output looks like: [2026-04-21 14:00:00:000 INFO]
+                if "INFO" in last_line:
+                    return True, f"{last_line}"
+                elif "ERROR" in last_line:
+                    return False, f"{last_line}"
+        return False, f"Cannot find {log_file}"
 
     except OSError as e:
         return False, f"File system error: {str(e)}"

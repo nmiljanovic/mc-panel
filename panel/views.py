@@ -149,7 +149,7 @@ def manage_assets(request):
             )
             # Django message framework
             if success:
-                messages.success(request, "Active world successfully changed.")
+                messages.success(request, "World successfully changed.")
             else:
                 messages.error(request, f"Unable to change world: {message}")
 
