@@ -64,14 +64,14 @@
                     <div class="d-flex flex-wrap gap-2">
                         {% for player in players %}
                             <div class="player-tag">
-                                <img src="https://minotar.net/helm/{{ player.username }}/32"
+                                <img src="https://minotar.net/helm/{{ player.username }}?bg=true/32"
                                      class="avatar-img me-2"
                                      alt="head">
                                 <span>{{ player.username }}</span>
                             </div>
                         {% empty %}
                             {% if stats.online %}
-                                <p class="text-muted small mt-2">The world is currently empty... for now.</p>
+                                <p class="text-muted small mt-2">The world is currently empty.</p>
                             {% else %}
                                 <p class="text-muted">N/A</p>
                             {% endif %}
