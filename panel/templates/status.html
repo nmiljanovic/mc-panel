@@ -5,7 +5,7 @@
         .online-dot { background-color: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
         .offline-dot { background-color: #e74c3c; }
         .player-tag { 
-            background: #2a2e33; 
+            /* background: #2a2e33; */
             border: 1px solid #444; 
             border-radius: 6px; 
             padding: 6px 12px; 
@@ -64,14 +64,14 @@
                     <div class="d-flex flex-wrap gap-2">
                         {% for player in players %}
                             <div class="player-tag">
-                                <img src="https://api.mineatar.io/face/{{ player.username }}?scale=8"
+                                <img src="https://minotar.net/helm/{{ player.username }}/32"
                                      class="avatar-img me-2"
                                      alt="head">
                                 <span>{{ player.username }}</span>
                             </div>
                         {% empty %}
                             {% if stats.online %}
-                                <p class="text-muted small mt-2">No players are currently exploring the world.</p>
+                                <p class="text-muted small mt-2">The world is currently empty... for now.</p>
                             {% else %}
                                 <p class="text-muted">N/A</p>
                             {% endif %}
