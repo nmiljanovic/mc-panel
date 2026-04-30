@@ -48,24 +48,30 @@ class LoginForm(AuthenticationForm):
     )
 
 
+def server_status(request):
+    stats = get_server_stats()
+    return render(request, 'status.html', {'stats': stats})
+
+
 @login_required
-def dashboard(request):
+def manage_server(request):
     server_path = settings.SERVER_PATH
     pipe_path = settings.PIPE_PATH
     log_file = os.path.join(server_path, settings.LOG_FILE)
     wiki_url = settings.WIKI_URL
     stats = get_server_stats()
     process_name = 'bedrock_server'
+    scraper_path = os.path.join(os.path.dirname(__file__), 'watch_logs.py')
 
     if request.method == "POST":
         if 'start' in request.POST.get("action"):
             success, message = start_bedrock_server(
-                server_path, pipe_path, log_file)
+                server_path, pipe_path, log_file, scraper_path)
             if not success:
                 messages.error(request, f"{message}")
 
         elif 'stop' in request.POST.get("action"):
-            success, message = stop_bedrock_server(process_name)
+            success, message = stop_bedrock_server(process_name, scraper_path)
             if not success:
                 messages.error(request, f"{message}")
 
@@ -76,11 +82,11 @@ def dashboard(request):
             else:
                 messages.error(request, f"{message}")
 
-        return redirect('dashboard')
+        return redirect('manage_server')
 
     running_status = is_server_running()
 
-    return render(request, 'dashboard.html', {
+    return render(request, 'manager.html', {
         'stats': stats,
         'is_running': running_status,
         'logs': get_latest_logs(os.path.join(server_path, f"{log_file}"))
@@ -91,6 +97,7 @@ def dashboard(request):
 def manage_settings(request):
     server_path = settings.SERVER_PATH
     prop_path = os.path.join(server_path, 'server.properties')
+
     if request.method == "POST":
         # Get all updated keys from the form
         new_settings = {

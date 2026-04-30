@@ -99,5 +99,5 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
-LOGIN_REDIRECT_URL = 'dashboard'
-LOGOUT_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = 'manage_server'
+LOGOUT_REDIRECT_URL = 'status'

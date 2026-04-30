@@ -1,10 +1,11 @@
-from django.urls import path
 from . import views
 from .views import LoginForm
+from django.urls import path
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('', views.dashboard, name='dashboard'),
+    path('', views.server_status, name='status'),
+    path('manager/', views.manage_server, name='manage_server'),
     path(
         'accounts/login/',
         auth_views.LoginView.as_view(

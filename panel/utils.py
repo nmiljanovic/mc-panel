@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import json
 import time
 import psutil
@@ -9,6 +10,7 @@ import subprocess
 import urllib.request
 from django.conf import settings
 from mcstatus import BedrockServer
+from .models import OnlinePlayer
 
 
 def get_server_stats(ip="127.0.0.1", port=19132):
@@ -22,7 +24,17 @@ def get_server_stats(ip="127.0.0.1", port=19132):
         'memory_used': round(memory.used / (1024**3), 2),
         'memory_total': round(memory.total / (1024**3), 2),
         'disk_used': round(disk.used / (1024**3), 1),
-        'disk_total': round(disk.total / (1024**3), 1)
+        'disk_total': round(disk.total / (1024**3), 1),
+        # Satus page
+        "online": False,
+        "motd": "N/A",
+        "players_online": 0,
+        "players_max": 0,
+        "version": "N/A",
+        "map_name": "N/A",
+        "gamemode": "N/A",
+        "latency": 0,
+        "players": []
     }
 
     # Minecraft Stats
@@ -33,13 +45,19 @@ def get_server_stats(ip="127.0.0.1", port=19132):
     try:
         server = BedrockServer.lookup(f"{ip}:{current_port}")
         status = server.status()
+        stats['online'] = True
+        stats['motd'] = status.motd.to_plain()
         stats['players_online'] = status.players.online
         stats['players_max'] = status.players.max
         stats['version'] = status.version.version
-        stats['online'] = True
+        stats['map_name'] = status.map_name
+        stats['gamemode'] = status.gamemode
+        stats['latency'] = round(status.latency, 2)
+        stats['players'] = OnlinePlayer.objects.all()
+
     except Exception as e:
-        print(f"Ping failed: {str(e)}")
         stats['online'] = False
+        print(f"Error: {str(e)}")
 
     return stats
 
@@ -118,7 +136,7 @@ def get_latest_logs(log_file, line_count=30):
         return f"Unable to read log file: {str(e)}"
 
 
-def start_bedrock_server(server_path, pipe_path, log_file):
+def start_bedrock_server(server_path, pipe_path, log_file, scraper_path):
     if is_server_running():
         return False, "Server is already started."
 
@@ -141,26 +159,43 @@ def start_bedrock_server(server_path, pipe_path, log_file):
             cwd=server_path,
             shell=True
         )
-        return True, "Server successfully started."
+        # Start the log scraper subprocess
+        subprocess.Popen(
+            [sys.executable, scraper_path],
+            env=os.environ.copy()  # Pass current Django environment variables
+        )
+        return True, "Server and scraper successfully started."
 
     except Exception as e:
         return False, f"Unable to start the server: {str(e)}"
 
 
-def stop_bedrock_server(process_name):
+def stop_bedrock_server(process_name, scraper_path):
     if not is_server_running():
         return False, "Server is already stoppped."
 
+    targets = [process_name, scraper_path, "tail"]
+    stopped_process = False
     # Look for the process by name
-    for proc in psutil.process_iter(['name', 'pid']):
+    for proc in psutil.process_iter(['name', 'cmdline']):
         try:
-            if process_name in proc.info['name']:
-                proc.terminate()  # Send the stop signal
-                return True, "Server successfully stopped."
+            # Check the process name OR the command line (for python scripts)
+            cmdline = " ".join(proc.info['cmdline'] or [])
+            if any(target in proc.info['name'] or target in cmdline for target in targets):
+                proc.terminate()
+                stopped_process = True
         except (psutil.NoSuchProcess, psutil.AccessDenied):
-            return False, "Cannot find server process."
+            continue
+
         except Exception as e:
             return False, f"Unable to stop the server: {str(e)}"
+
+    OnlinePlayer.objects.all().delete()
+
+    if stopped_process:
+        return True, "Server and scraper successfully stopped."
+    else:
+        return False, "No running processes were found."
 
 
 def is_server_running():
