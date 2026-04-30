@@ -170,11 +170,11 @@ def start_bedrock_server(server_path, pipe_path, log_file, scraper_path):
         return False, f"Unable to start the server: {str(e)}"
 
 
-def stop_bedrock_server(process_name, scraper_path):
+def stop_bedrock_server(process_name, scraper_path, pipe_path):
     if not is_server_running():
         return False, "Server is already stoppped."
 
-    targets = [process_name, scraper_path, "tail"]
+    targets = [process_name, scraper_path, pipe_path]
     stopped_process = False
     # Look for the process by name
     for proc in psutil.process_iter(['name', 'cmdline']):

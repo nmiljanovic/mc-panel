@@ -71,7 +71,8 @@ def manage_server(request):
                 messages.error(request, f"{message}")
 
         elif 'stop' in request.POST.get("action"):
-            success, message = stop_bedrock_server(process_name, scraper_path)
+            success, message = stop_bedrock_server(
+                process_name, scraper_path, pipe_path)
             if not success:
                 messages.error(request, f"{message}")
 
