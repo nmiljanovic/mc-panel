@@ -4,31 +4,23 @@
         .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
         .online-dot { background-color: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
         .offline-dot { background-color: #e74c3c; }
-        /* .player-tag { 
-             background: #2a2e33;
-            border: 1px solid #444; 
-            border-radius: 6px; 
-            padding: 6px 12px; 
-            display: flex;
-            align-items: center;
-        } */
+        .stat-label { color: #8a8d90; font-size: 0.75rem; text-uppercase: true; font-weight: bold; }
+        .stat-value { font-size: 1.1rem; font-weight: 600; }
+        .avatar-img { width: 28px; height: 28px; image-rendering: pixelated; }
         .player-tag {
         /* Layout */
         display: inline-flex;
         align-items: center;
         padding: 6px 12px;
         margin: 5px;
-        
         /* Colors & Background */
-        background-color: #f8f9fa; /* Very light gray */
-        border: 1px solid #dee2e6; /* Soft border color */
-        border-radius: 50px;       /* Pill shape for a "friendly" feel */
-        
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 50px;
         /* Text Styling */
-        color: #343a40;            /* Dark charcoal text for readability */
+        color: #343a40;
         font-weight: 500;
         font-size: 0.9rem;
-        
         /* The "Lift" effect */
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         transition: transform 0.2s, box-shadow 0.2s;
@@ -37,11 +29,8 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background-color: #ffffff;
-            border-color: #007bff; /* Slight blue highlight on hover */
+            border-color: #007bff;
         }
-        .avatar-img { width: 28px; height: 28px; image-rendering: pixelated; }
-        .stat-label { color: #8a8d90; font-size: 0.75rem; text-uppercase: true; font-weight: bold; }
-        .stat-value { font-size: 1.1rem; font-weight: 600; }
     </style>
     <div class="col-md-6">
         <div class="row mb-4">
