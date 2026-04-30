@@ -50,7 +50,10 @@ class LoginForm(AuthenticationForm):
 
 def server_status(request):
     stats = get_server_stats()
-    return render(request, 'status.html', {'stats': stats})
+    return render(request, 'status.html', {
+        'stats': stats,
+        'players': stats.get('players', [])
+    })
 
 
 @login_required

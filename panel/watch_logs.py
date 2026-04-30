@@ -4,14 +4,11 @@ import time
 import django
 from django.conf import settings
 
-# Get the script directory
+# Get the script and root directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Get the parent directory
-project_root = os.path.abspath(os.path.join(script_dir, os.pardir))
-
-if project_root not in sys.path:
-    sys.path.append(project_root)
+root_dir = os.path.abspath(os.path.join(script_dir, os.pardir))
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
 
 # Setup Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'panel.settings')
