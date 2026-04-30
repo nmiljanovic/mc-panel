@@ -7,66 +7,68 @@
             {% endfor %}
         </ul>
     {% endif %}
-    <h3>World Settings</h3>
-    <p class="text-muted">
-        Edit the <code>world.settings</code> here.
-    </p>
-    <div class="card shadow-sm col-md-6 mb-4">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">
-                Active World <small>({{ active_world|default:"Unknown" }})</small>
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <form method="post">
-                    {% csrf_token %}
-                    <select name="world_name" class="form-select mb-3">
-                        {% for world in worlds %}<option value="{{ world }}">{{ world }}</option>{% endfor %}
-                    </select>
-                    <button name="set_world" class="btn btn-primary">Change</button>
-                    <button name="delete_world"
-                            class="btn btn-danger"
-                            onclick="return confirm('Permanently delete this world data?');">Delete</button>
-                    <button name="backup_world" class="btn btn-warning">Backup</button>
-                </form>
+    <div class="alert alert-info col-md-6 mt-3 mb-3">
+        Edit the <code>world.settings</code> here
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Active World</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <small class="text-muted mt-2 d-block">Current active world: {{ active_world|default:"Unknown" }}</small>
+                    <form method="post" class="gy-3">
+                        {% csrf_token %}
+                        <select name="world_name" class="form-select mb-3">
+                            {% for world in worlds %}<option value="{{ world }}">{{ world }}</option>{% endfor %}
+                        </select>
+                        <button name="set_world" class="btn btn-primary">Change</button>
+                        <button name="delete_world"
+                                class="btn btn-danger"
+                                onclick="return confirm('Permanently delete this world data?');">Delete</button>
+                        <button name="backup_world" class="btn btn-warning">Backup</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-    <div class="card shadow-sm col-md-6 mb-4">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">
-                Restore World <small>(from backup)</small>
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <form method="post">
-                    {% csrf_token %}
-                    <select name="world_backup_file" class="form-select mb-3">
-                        {% for world in world_backups %}<option value="{{ world }}">{{ world }}</option>{% endfor %}
-                    </select>
-                    <button name="restore_world" class="btn btn-success">Restore</button>
-                </form>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Restore World</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <small class="text-muted mt-2 d-block">Note: Only saved worlds can be restored.</small>
+                    <form method="post" class="gy-3">
+                        {% csrf_token %}
+                        <select name="world_backup_file" class="form-select mb-3">
+                            {% for world in world_backups %}<option value="{{ world }}">{{ world }}</option>{% endfor %}
+                        </select>
+                        <button name="restore_world" class="btn btn-primary">Restore</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-    <div class="card shadow-sm col-md-6 mb-4">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">
-                Install World <small>(.mcworld)</small>
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <input type="file"
-                           name="world_file"
-                           class="form-control mb-3"
-                           accept=".mcworld">
-                    <button name="upload_world" class="btn btn-success">Upload</button>
-                </form>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Install World</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <small class="text-muted mt-2 d-block">Note: Only .mcworld file format accepted.</small>
+                    <form method="post" class="gy-3" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="file"
+                               name="world_file"
+                               class="form-control mb-3"
+                               accept=".mcworld">
+                        <button name="upload_world" class="btn btn-primary">Upload</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

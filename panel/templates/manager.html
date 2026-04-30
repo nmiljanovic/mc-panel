@@ -7,63 +7,97 @@
             {% endfor %}
         </ul>
     {% endif %}
-    <div class="card p-3 col-md-6 mb-4">
-        <h5 class="border-bottom border-secondary pb-2">Server Status</h5>
-        {% if is_running %}
-            <span class="badge bg-success">Online</span>
-        {% else %}
-            <span class="badge bg-danger">Offline</span>
-        {% endif %}
-        <form method="post" class="mt-3">
-            {% csrf_token %}
-            {% if not is_running %}
-                <button name="action" value="start" class="btn btn-primary w-100">Start Server</button>
-            {% else %}
-                <button name="action"
-                        value="stop"
-                        class="btn btn-danger w-100"
-                        onclick="return confirm('Are you sure you want to STOP the server?');">Stop Server</button>
-            {% endif %}
-            <div class="mt-3">
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit"
-                            name="action"
-                            value="update"
-                            class="btn btn-warning w-100"
-                            onclick="return confirm('Are you sure you want to update the server? This may take several minutes.');">
-                        Update Server
-                    </button>
-                </form>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Server Status</h5>
             </div>
-        </form>
+            <div class="card-body">
+                <div class="row">
+                    <form method="post" class="gy-3">
+                        {% if is_running %}
+                            <span class="badge bg-success w-100">online</span>
+                        {% else %}
+                            <span class="badge bg-danger w-100">offline</span>
+                        {% endif %}
+                        {% csrf_token %}
+                        {% if not is_running %}
+                            <button name="action" value="start" class="btn btn-primary w-100 mt-3">Start Server</button>
+                        {% else %}
+                            <button name="action"
+                                    value="stop"
+                                    class="btn btn-danger w-100"
+                                    onclick="return confirm('Are you sure you want to STOP the server?');">
+                                Stop Server
+                            </button>
+                        {% endif %}
+                        <div class="mt-3">
+                            <form method="post">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        name="action"
+                                        value="update"
+                                        class="btn btn-warning w-100"
+                                        onclick="return confirm('Are you sure you want to update the server? This may take several minutes.');">
+                                    Update Server
+                                </button>
+                            </form>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="card p-3 col-md-6 mb-4">
-        <h5 class="border-bottom border-secondary pb-2">System Performance</h5>
-        <label>CPU Usage: {{ stats.cpu_pct }}%</label>
-        <div class="progress mb-2">
-            <div class="progress-bar" style="width: {{ stats.cpu_pct }}%"></div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">System Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <form method="post" class="gy-3">
+                        <label class="form-label">CPU Usage: {{ stats.cpu_pct }}%</label>
+                        <div class="progress mb-2">
+                            <div class="progress-bar" style="width: {{ stats.cpu_pct }}%"></div>
+                        </div>
+                        <label class="form-label">
+                            Memory:  {{ stats.memory_pct }}% ... [{{ stats.memory_used }} GB / {{ stats.memory_total }} GB]
+                        </label>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-info" style="width: {{ stats.memory_pct }}%"></div>
+                        </div>
+                        <label class="form-label">
+                            Disk:  {{ stats.disk_pct }}% ... [{{ stats.disk_used }} GB / {{ stats.disk_total }} GB]
+                        </label>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-info" style="width: {{ stats.disk_pct }}%"></div>
+                        </div>
+                        <label class="form-label">Network (Active Players): {{ stats.players_online }} / {{ stats.players_max }}</label>
+                    </form>
+                </div>
+            </div>
         </div>
-        <label>Memory:  {{ stats.memory_pct }}% ... [{{ stats.memory_used }} GB / {{ stats.memory_total }} GB]</label>
-        <div class="progress mb-2">
-            <div class="progress-bar bg-info" style="width: {{ stats.memory_pct }}%"></div>
-        </div>
-        <label>Disk:  {{ stats.disk_pct }}% ... [{{ stats.disk_used }} GB / {{ stats.disk_total }} GB]</label>
-        <div class="progress mb-2">
-            <div class="progress-bar bg-info" style="width: {{ stats.disk_pct }}%"></div>
-        </div>
-        <label>Network (Active Players): {{ stats.players_online }} / {{ stats.players_max }}</label>
     </div>
-    <div class="card bg-dark text-success p-3 col-md-6">
-        <h5 class="text-white border-bottom border-secondary pb-2">
-            Server Console <small>{{ stats.version }}</small>
-        </h5>
-        <div id="console"
-             style="height: 300px;
-                    overflow-y: scroll;
-                    font-family: monospace;
-                    font-size: 0.9rem">
-            <pre class="text-success" style="white-space: pre-wrap;">{{ logs }}</pre>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    Server Console - <small>{{ stats.version }}</small>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <form method="post" class="gy-3">
+                        <div id="console"
+                             style="height: 300px;
+                                    overflow-y: scroll;
+                                    font-family: monospace;
+                                    font-size: 0.8rem">
+                            <pre style="white-space: pre-wrap;">{{ logs }}</pre>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     <script>
