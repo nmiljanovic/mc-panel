@@ -17,7 +17,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <small class="text-muted mt-2 d-block">Current active world: {{ active_world|default:"Unknown" }}</small>
+                    <small class="text-muted mt-3 d-block">Active world: {{ active_world|default:"Unknown" }}</small>
                     <form method="post" class="gy-3">
                         {% csrf_token %}
                         <select name="world_name" class="form-select mb-3">
@@ -40,7 +40,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <small class="text-muted mt-2 d-block">Note: Only saved worlds can be restored.</small>
+                    <small class="text-muted mt-3 d-block">Note: Only saved worlds can be restored.</small>
                     <form method="post" class="gy-3">
                         {% csrf_token %}
                         <select name="world_backup_file" class="form-select mb-3">
@@ -59,7 +59,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <small class="text-muted mt-2 d-block">Note: Only .mcworld file format accepted.</small>
+                    <small class="text-muted mt-3 d-block">Note: Only .mcworld file format accepted.</small>
                     <form method="post" class="gy-3" enctype="multipart/form-data">
                         {% csrf_token %}
                         <input type="file"

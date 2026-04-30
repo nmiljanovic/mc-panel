@@ -26,7 +26,7 @@
                         {% else %}
                             <button name="action"
                                     value="stop"
-                                    class="btn btn-danger w-100"
+                                    class="btn btn-danger w-100 mt-3"
                                     onclick="return confirm('Are you sure you want to STOP the server?');">
                                 Stop Server
                             </button>
@@ -81,9 +81,7 @@
     <div class="col-md-6 mb-4">
         <div class="card shadow-sm h-100">
             <div class="card-header">
-                <h5 class="mb-0">
-                    Server Console - <small>{{ stats.version }}</small>
-                </h5>
+                <h5 class="mb-0">Server Console</h5>
             </div>
             <div class="card-body">
                 <div class="row">

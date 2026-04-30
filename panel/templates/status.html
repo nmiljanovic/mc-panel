@@ -21,9 +21,6 @@
         color: #343a40;
         font-weight: 500;
         font-size: 0.9rem;
-        /* The "Lift" effect */
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s, box-shadow 0.2s;
         }
         .player-tag:hover {
             transform: translateY(-1px);
@@ -34,16 +31,16 @@
     </style>
     <div class="col-md-6">
         <div class="row mb-4">
-            <div class="col-md-8">
-                <h1 class="fw-bold mb-1">Server Status</h1>
-                <p class="text-muted fs-5">{{ stats.motd }}</p>
-            </div>
-            <div class="col-md-4 text-md-end d-flex align-items-center justify-content-md-end">
+            <div class="col-md-12 d-flex justify-content-between align-items-center">
+                <h2 class="fw-bold mb-1">SERVER STATUS</h2>
                 {% if stats.online %}
                     <span class="badge bg-success px-3 py-2"><span class="status-dot online-dot me-2"></span> ONLINE</span>
                 {% else %}
                     <span class="badge bg-danger px-3 py-2"><span class="status-dot offline-dot me-2"></span> OFFLINE</span>
                 {% endif %}
+            </div>
+            <div class="col-md-12">
+                <p class="text-muted fs-5">{{ stats.motd }}</p>
             </div>
         </div>
         <div class="row g-4">
@@ -87,7 +84,7 @@
                             </div>
                         {% empty %}
                             {% if stats.online %}
-                                <p class="text-muted small mt-2">The world is currently empty.</p>
+                                <p class="text-muted small mt-2">There are no active players in the world.</p>
                             {% else %}
                                 <p class="text-muted">N/A</p>
                             {% endif %}

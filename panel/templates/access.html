@@ -17,14 +17,14 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-12 gy-3">
                         <label class="form-label">Allowlist Management</label>
-                        <form method="post" class="input-group mb-2">
+                        <form method="post" class="input-group">
                             {% csrf_token %}
                             <input type="text"
                                    name="player_name"
                                    class="form-control"
-                                   placeholder="Gamertag (must be valid)">
+                                   placeholder="Gamertag">
                             <button name="action" value="add" class="btn btn-primary btn-sm">Add</button>
                             <button name="action" value="remove" class="btn btn-danger btn-sm">Remove</button>
                         </form>
@@ -32,7 +32,7 @@
                             {% csrf_token %}
                             <button name="action"
                                     value="reload"
-                                    class="btn btn-outline-secondary btn-sm w-100">Reload allowlist.json</button>
+                                    class="btn btn-outline-secondary btn-sm mt-2 w-100">Reload allowlist.json</button>
                         </form>
                     </div>
                     <div class="col-md-12 mt-4">
@@ -42,11 +42,11 @@
                             <input type="text"
                                    name="player_name"
                                    class="form-control"
-                                   placeholder="Gamertag (must be online)">
-                            <button name="action" value="op" class="btn btn-primary btn-sm">Set OP</button>
-                            <button name="action" value="deop" class="btn btn-warning btn-sm">DeOP</button>
+                                   placeholder="Gamertag">
+                            <button name="action" value="op" class="btn btn-primary btn-sm">SET OP</button>
+                            <button name="action" value="deop" class="btn btn-warning btn-sm">DE-OP</button>
                         </form>
-                        <small class="text-muted mt-2 d-block">Note: OP status grants full admin commands.</small>
+                        <small class="text-muted mt-2 d-block">Note: Gamertag must be online and valid.</small>
                     </div>
                 </div>
             </div>
@@ -59,7 +59,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <form method="post">
+                    <form method="post" class="gy-3">
                         {% csrf_token %}
                         <label class="form-label" style="margin-top: 20px;">allowlist.json</label>
                         <textarea name="allowlist_data"
