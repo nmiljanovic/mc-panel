@@ -10,10 +10,6 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            .navbar > .container {
-                padding-left: 0;
-                padding-right: 0;
-            }
             .btn {
                 padding: 8px 20px;
                 border-radius: 8px;
@@ -23,7 +19,10 @@
                 transition: all 0.2s ease;
                 border: none;
             }
-            .btn-primary { background-color: #007bff; color: white; }
+            .btn-primary {
+                background-color: #007bff;
+                color: white;
+            }
             .card {
                 background: #ffffff;
                 border: 1px solid #e9ecef;
@@ -31,7 +30,9 @@
                 overflow: hidden;
                 transition: box-shadow 0.3s ease;
             }
-            .card:hover { box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15) !important; }
+            .card:hover {
+                box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15) !important;
+            }
             .card .card-header {
                 background-color: #ffffff;
                 border-bottom: 1px solid #f1f3f5;
@@ -54,8 +55,15 @@
                 margin-right: 12px;
                 border-radius: 10px;
             }
-            .card .card-body { padding: 1.5rem; }
-            .form-label { color: #8a8d90; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; }
+            .card .card-body { 
+                padding: 1.5rem;
+            }
+            .form-label {
+                color: #8a8d90;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
             .alert-info {
                 background-color: #e7f3ff;
                 border: 1px solid #c2e0ff;
@@ -72,52 +80,54 @@
         {% load static %}
         <nav class="navbar navbar-dark bg-dark mb-4">
             <div class="container">
-                <div class="col-md-6 d-flex align-items-center">
-                    <div class="dropdown me-3">
-                        <button class="btn btn-dark"
-                                type="button"
-                                id="navMenuButton"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                                style="padding: 0.25rem 0.5rem">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-dark"
-                            aria-labelledby="navMenuButton">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'manage_server' %}">Server Manager</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'manage_settings' %}">Server Settings</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'manage_assets' %}">Worlds & Mods</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'manage_access' %}">Allowlist & Ops</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <a class="navbar-brand d-flex align-items-center me-auto"
-                       href="{% url 'manage_server' %}">
-                        <img src="{% static 'favicon.svg' %}"
-                             width="32"
-                             height="32"
-                             class="d-inline-block align-top me-2">
-                        Bedrock Panel
-                    </a>
-                    <div class="d-flex align-items-center">
-                        {% if user.is_authenticated %}
-                            <span class="navbar-text me-3 text-light d-none d-sm-inline">
-                                <strong>{{ user.username }}</strong>
-                            </span>
-                            <form action="{% url 'logout' %}" method="post" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
-                            </form>
-                        {% else %}
-                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm">Login</a>
-                        {% endif %}
+                <div class="row w-100 m-0">
+                    <div class="col-md-6 d-flex align-items-center justify-content-between p-0">
+                        <div class="dropdown me-3">
+                            <button class="btn btn-dark"
+                                    type="button"
+                                    id="navMenuButton"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    style="padding: 0.25rem 0.5rem">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark"
+                                aria-labelledby="navMenuButton">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'manage_server' %}">Server Manager</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'manage_settings' %}">Server Settings</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'manage_assets' %}">Worlds & Mods</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'manage_access' %}">Allowlist & Ops</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <a class="navbar-brand d-flex align-items-center me-auto"
+                           href="{% url 'manage_server' %}">
+                            <img src="{% static 'favicon.svg' %}"
+                                 width="32"
+                                 height="32"
+                                 class="d-inline-block align-top me-2">
+                            Bedrock Panel
+                        </a>
+                        <div class="d-flex align-items-center">
+                            {% if user.is_authenticated %}
+                                <span class="navbar-text me-3 text-light d-none d-sm-inline">
+                                    <strong>{{ user.username }}</strong>
+                                </span>
+                                <form action="{% url 'logout' %}" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                                </form>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm">Login</a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
