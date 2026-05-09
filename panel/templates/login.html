@@ -3,14 +3,12 @@
     <div class="col-md-6 px-md-5 mt-5">
         <div class="row justify-content-center">
             <div class="px-md-5">
-                <div class="px-md-5">
-                    <div class="card p-4">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-3">{{ form.as_p }}</div>
-                            <button type="submit" class="btn btn-primary w-100">Login</button>
-                        </form>
-                    </div>
+                <div class="card p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">{{ form.as_p }}</div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
                 </div>
             </div>
         </div>
