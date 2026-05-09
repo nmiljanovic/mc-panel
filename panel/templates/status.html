@@ -77,9 +77,7 @@
                     <div class="d-flex flex-wrap gap-2">
                         {% for player in players %}
                             <div class="player-tag">
-                                <img src="https://minotar.net/helm/{{ player.username }}/32"
-                                     class="avatar-img me-2"
-                                     alt="head">
+                                <img src="{{ player.avatar }}" class="avatar-img me-2" alt="head">
                                 <span>{{ player.username }}</span>
                             </div>
                         {% empty %}
