@@ -1,10 +1,10 @@
 services:
   mc-panel:
-    image: mc-panel:latest
-    container_name: minecraft_panel
+    image: minecraft-ag-panel:latest
+    container_name: minecraft_ag_panel
     restart: unless-stopped
     env_file: 
-      - /home/$USER/mc_panel/.env
+      - /home/$USER/minecraft.ag/.env
     volumes:
       - /home/$USER/minecraft:/minecraft
       - /home/$USER/world_backups:/world_backups
