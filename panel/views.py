@@ -58,11 +58,11 @@ def server_status(request):
     })
 
 
-def user_latency_js(request):
+def player_latency_js(request):
     # JS as a Python string
     js_code = """
     document.addEventListener('DOMContentLoaded', async () => {
-        const display = document.getElementById('user-latency');
+        const display = document.getElementById('player-latency');
         if (!display) return;
         const startTime = performance.now();
         try {
