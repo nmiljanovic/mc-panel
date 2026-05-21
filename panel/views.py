@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.views.decorators.cache import never_cache
 from .utils import (
     get_server_stats,
     read_properties,
@@ -54,6 +56,31 @@ def server_status(request):
         'stats': stats,
         'players': stats.get('players', [])
     })
+
+
+def user_latency_js(request):
+    # JS as a Python string
+    js_code = """
+    document.addEventListener('DOMContentLoaded', async () => {
+        const display = document.getElementById('user-latency');
+        if (!display) return;
+        const startTime = performance.now();
+        try {
+            await fetch('/api/ping/?t=' + Date.now());
+            const endTime = performance.now();
+            display.innerText = Math.round(endTime - startTime) + ' ms';
+        } catch (e) {
+            display.innerText = 'N/A';
+        }
+    });
+    """
+    return HttpResponse(js_code, content_type="application/javascript")
+
+
+@never_cache
+def ping_endpoint(request):
+    # 204 No Content for fast response
+    return HttpResponse(status=204)
 
 
 @login_required

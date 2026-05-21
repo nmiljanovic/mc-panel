@@ -53,7 +53,7 @@
                         </div>
                         <div class="col-6">
                             <div class="stat-label">LATENCY</div>
-                            <div class="stat-value">{{ stats.latency }}ms</div>
+                            <div class="stat-value" id="user-latency"></div>
                         </div>
                         <div class="col-6">
                             <div class="stat-label">WORLD</div>
@@ -92,4 +92,5 @@
             </div>
         </div>
     </div>
+    <script src="{% url 'user_latency_js' %}"></script>
 {% endblock %}
