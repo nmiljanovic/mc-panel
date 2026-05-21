@@ -68,7 +68,7 @@ def user_latency_js(request):
         try {
             await fetch('/api/ping/?t=' + Date.now());
             const endTime = performance.now();
-            display.innerText = Math.round(endTime - startTime) + ' ms';
+            display.innerText = Math.round(endTime - startTime) + 'ms';
         } catch (e) {
             display.innerText = 'N/A';
         }
