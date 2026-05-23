@@ -25,8 +25,14 @@
                                    name="player_name"
                                    class="form-control"
                                    placeholder="Gamertag">
-                            <button name="action" value="add" class="btn btn-primary btn-sm">Add</button>
-                            <button name="action" value="remove" class="btn btn-danger btn-sm">Remove</button>
+                            <button name="action"
+                                    value="add"
+                                    class="btn btn-primary btn-sm"
+                                    onclick="alert('Reload allowlist.json after making changes.')">Add</button>
+                            <button name="action"
+                                    value="remove"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="alert('Reload allowlist.json after making changes.')">Remove</button>
                         </form>
                         <form method="post">
                             {% csrf_token %}
