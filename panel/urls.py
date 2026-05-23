@@ -1,14 +1,15 @@
-from . import views
-from .views import LoginForm
 from django.urls import path
+from . import views
 from django.contrib.auth import views as auth_views
+from .views import LimitedLoginView
+from .views import LoginForm
 
 urlpatterns = [
     path('', views.server_status, name='status'),
     path('manager/', views.manage_server, name='manage_server'),
     path(
         'accounts/login/',
-        auth_views.LoginView.as_view(
+        LimitedLoginView.as_view(
             template_name='login.html',
             authentication_form=LoginForm
         ),
