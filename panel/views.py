@@ -1,12 +1,12 @@
 import os
 import json
-from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.forms import AuthenticationForm
 from django_ratelimit.core import is_ratelimited
+from django import forms
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
@@ -33,10 +33,10 @@ class LimitedLoginView(auth_views.LoginView):
     def get(self, request, *args, **kwargs):
         # Pass a static string group to track GET views separately
         if is_ratelimited(request, group='login_get', key='ip', rate='2/m', increment=True):
-            form = self.get_form()
-            form.add_error(None, "Too many connection attempts.")
+            messages.error(
+                request, "Too many connection attempts. Please wait.")
+            form = self.get_form_class()()
             return self.render_to_response(self.get_context_data(form=form))
-
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
