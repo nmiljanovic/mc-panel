@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import views as auth_views
-from django_ratelimit.core import is_ratelimited
+from .ratelimit import RateLimit, RateLimitExceeded
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
@@ -30,28 +30,53 @@ from .utils import (
 
 
 class LimitedLoginView(auth_views.LoginView):
+
     def get(self, request, *args, **kwargs):
-        # Pass a static string group to track GET views separately
-        if is_ratelimited(request, group='login_get', key='ip', rate='2/m', increment=True):
+        # Get IP from SetRemoteAddrFromForwardedFor middleware
+        user_ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
+        # Append action prefix so IP limits don't clash across different views
+        cache_key = f"login_get:{user_ip}"
+
+        # Initialize rate limiter with the dynamic IP keytry
+        limiter = RateLimit(
+            key=cache_key,
+            limit=2,
+            period=60,
+        )
+
+        try:
+            limiter.check()
+        except RateLimitExceeded:
             messages.error(
                 request, "Too many connection attempts. Please wait.")
             form = self.get_form_class()()
             return self.render_to_response(self.get_context_data(form=form))
+
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        # Pass a separate static string group to track POST submissions
-        if is_ratelimited(request, group='login_post', key='ip', rate='2/m', increment=True):
-            # Reset form
-            form = self.form_class(data=request.POST)
-            form.errors.clear()
-            form.add_error(None, "Too many login attempts. Please wait.")
+        user_ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
+        cache_key = f"login_get:{user_ip}"
+
+        limiter = RateLimit(
+            key=cache_key,
+            limit=2,
+            period=60,
+        )
+
+        try:
+            limiter.check()
+        except RateLimitExceeded:
+            messages.error(request, "Too many login attempts. Please wait.")
+            form = self.get_form_class()()
             return self.render_to_response(self.get_context_data(form=form))
 
         return super().post(request, *args, **kwargs)
 
 
 class LoginForm(AuthenticationForm):
+    error_messages = {
+        'invalid_login': 'Please enter a correct username and password.'}
     username = forms.CharField(
         label="Player Name",
         widget=forms.TextInput(attrs={
