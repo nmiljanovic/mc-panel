@@ -326,6 +326,23 @@ def get_latest_version_url(wiki_url):
         return None
 
 
+def compare_server_versions(wiki_url):
+    match = re.search(
+        r'bedrock-server-([\d.]+)\.zip', get_latest_version_url(wiki_url))
+    if not match:
+        return False, "Unable to parse version url from wiki."
+
+    latest_version_str = ".".join(match.group(1).split(".")[:3])
+    current_version_str = get_server_stats().get('version', '0.0.0')
+
+    # map conversion e.g., 1.26.23.1 to (1, 26, 23, 1)
+    latest_version_tuple = tuple(map(int, latest_version_str.split('.')))
+    current_version_tuple = tuple(map(int, current_version_str.split('.')))
+    if latest_version_tuple > current_version_tuple:
+        return True, f"Bedrock v{latest_version_str} is availbale. Update the server."
+    return False, "Server is up to date."
+
+
 def update_bedrock_server(server_path, wiki_url):
     if is_server_running():
         return False, "Cannot update. Stop the server first."

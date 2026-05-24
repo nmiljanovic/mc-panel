@@ -3,13 +3,13 @@ import json
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.views.decorators.cache import never_cache
 from django.contrib.auth import views as auth_views
 from .ratelimit import RateLimit, RateLimitExceeded
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
-from django.views.decorators.cache import never_cache
 from .utils import (
     get_server_stats,
     read_properties,
@@ -20,6 +20,7 @@ from .utils import (
     get_latest_logs,
     handle_world_upload,
     delete_world_dir,
+    compare_server_versions,
     update_bedrock_server,
     get_json_data,
     save_json_data,
@@ -42,6 +43,7 @@ class LimitedLoginView(auth_views.LoginView):
             key=cache_key,
             limit=2,
             period=60,
+            # cache=caches["different_cache"],
         )
 
         try:
@@ -142,6 +144,13 @@ def manage_server(request):
     process_name = 'bedrock_server'
     scraper_path = os.path.join(os.path.dirname(__file__), 'watch_logs.py')
 
+    if is_server_running():
+        success, message = compare_server_versions(wiki_url)
+        if success:
+            messages.success(request, f"{message}")
+        elif message.startswith("Unable to parse"):
+            messages.error(request, f"{message}")
+
     if request.method == "POST":
         if 'start' in request.POST.get("action"):
             success, message = start_bedrock_server(
@@ -169,6 +178,7 @@ def manage_server(request):
     return render(request, 'manager.html', {
         'stats': stats,
         'is_running': running_status,
+        'is_update_available': compare_server_versions,
         'logs': get_latest_logs(os.path.join(server_path, f"{log_file}"))
     })
 

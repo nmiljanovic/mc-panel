@@ -7,6 +7,7 @@
             {% endfor %}
         </ul>
     {% endif %}
+    {% if is_running %}{{ is_update_available }}{% endif %}
     <div class="col-md-6 mb-4 mt-4">
         <div class="card shadow-sm h-100">
             <div class="card-header">
