@@ -78,7 +78,7 @@ class LimitedLoginView(auth_views.LoginView):
 
 class LoginForm(AuthenticationForm):
     error_messages = {
-        'invalid_login': 'Please enter a correct player name and access key.'}
+        'invalid_login': 'Please enter the correct credentials.'}
     username = forms.CharField(
         label="Player Name",
         widget=forms.TextInput(attrs={
