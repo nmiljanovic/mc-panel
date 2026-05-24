@@ -56,7 +56,7 @@ class LimitedLoginView(auth_views.LoginView):
 
     def post(self, request, *args, **kwargs):
         user_ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
-        cache_key = f"login_get:{user_ip}"
+        cache_key = f"login_post:{user_ip}"
 
         limiter = RateLimit(
             key=cache_key,
@@ -76,7 +76,7 @@ class LimitedLoginView(auth_views.LoginView):
 
 class LoginForm(AuthenticationForm):
     error_messages = {
-        'invalid_login': 'Please enter a correct username and password.'}
+        'invalid_login': 'Please enter a correct player name and access key.'}
     username = forms.CharField(
         label="Player Name",
         widget=forms.TextInput(attrs={
