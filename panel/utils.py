@@ -339,7 +339,7 @@ def compare_server_versions(wiki_url):
     latest_version_tuple = tuple(map(int, latest_version_str.split('.')))
     current_version_tuple = tuple(map(int, current_version_str.split('.')))
     if latest_version_tuple > current_version_tuple:
-        return True, f"Bedrock version {latest_version_str} is available."
+        return True, f"Bedrock server v{latest_version_str} is available."
     return False, "Server is up to date."
 
 
