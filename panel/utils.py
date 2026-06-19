@@ -457,7 +457,7 @@ def live_world_backup(server_path, pipe_path, selected_world, world_path):
         os.makedirs(backup_path)
 
     try:
-        # 1. Inject 'save hold' into the pipe
+        # Inject 'save hold' into the pipe
         with open(pipe_path, "w") as pipe:
             pipe.write("save hold\n")
             pipe.flush()
