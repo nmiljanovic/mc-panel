@@ -31,7 +31,6 @@ from .utils import (
 
 
 class LimitedLoginView(auth_views.LoginView):
-
     def get(self, request, *args, **kwargs):
         # Get IP from SetRemoteAddrFromForwardedFor middleware
         user_ip = request.META.get('REMOTE_ADDR', '127.0.0.1')

@@ -224,14 +224,14 @@ def get_port_from_properties(file_path):
 
 
 def handle_world_upload(server_path, worlds_path, world_file):
-    # 1. Setup paths
+    # Setup paths
     os.makedirs(worlds_path, exist_ok=True)
 
     # Use the filename (minus .mcworld) as the folder name
     world_name = os.path.splitext(world_file.name)[0]
     final_dest = os.path.join(worlds_path, world_name)
 
-    # 2. Save temporary file
+    # Save temporary file
     temp_path = os.path.join(server_path, 'temp', world_file.name)
     os.makedirs(os.path.dirname(temp_path), exist_ok=True)
 
@@ -240,7 +240,7 @@ def handle_world_upload(server_path, worlds_path, world_file):
             for chunk in world_file.chunks():
                 f.write(chunk)
 
-        # 3. Extract logic
+        # Extract logic
         with zipfile.ZipFile(temp_path, 'r') as zip_ref:
             # Look for levelname.txt to find the true world root
             level_info = next(
@@ -255,7 +255,7 @@ def handle_world_upload(server_path, worlds_path, world_file):
 
             internal_root = os.path.dirname(level_info.filename)
 
-            # 4. Flatten and extract
+            # Flatten and extract
             for member in zip_ref.infolist():
                 if not member.filename.startswith(internal_root):
                     continue
@@ -282,7 +282,6 @@ def handle_world_upload(server_path, worlds_path, world_file):
 
 
 def delete_world_dir(world_del_path, selected_world, active_world):
-    # Delete world directory
     if is_server_running():
         return False, "Cannot delete world. Stop the server first."
     if not os.path.exists(world_del_path):
@@ -304,7 +303,7 @@ def delete_world_dir(world_del_path, selected_world, active_world):
 
 def get_latest_version_url(wiki_url):
     try:
-        # 1. Fetch the HTML
+        # Get the HTML
         req = urllib.request.Request(
             wiki_url, headers={"User-Agent": "Wget/1.21"})
         with urllib.request.urlopen(req, timeout=10) as response:
@@ -315,10 +314,10 @@ def get_latest_version_url(wiki_url):
         links = re.findall(
             r'https://[^\s"<>]+bin-linux[^\s"<>]+?\.zip', html_content)
 
-        # 3. Filter out "preview" versions
+        # Filter out "preview" versions
         stable_link = [link for link in links if "preview" not in link.lower()]
 
-        # 4. Return the last match
+        # Return the last match
         return stable_link[-1] if stable_link else None
 
     except Exception as e:
@@ -332,10 +331,11 @@ def compare_server_versions(wiki_url):
     if not match:
         return False, "Unable to parse version url from wiki."
 
+    # Conc ver to 3 decimal places (mcstatus format 0.0.0)
     latest_version_str = ".".join(match.group(1).split(".")[:3])
     current_version_str = get_server_stats().get('version', '0.0.0')
 
-    # map conversion e.g., 1.26.23.1 to (1, 26, 23, 1)
+    # Map conversion e.g., 1.26.23.1 to (1, 26, 23, 1)
     latest_version_tuple = tuple(map(int, latest_version_str.split('.')))
     current_version_tuple = tuple(map(int, current_version_str.split('.')))
     if latest_version_tuple > current_version_tuple:
@@ -351,13 +351,13 @@ def update_bedrock_server(server_path, wiki_url):
     if not download_url:
         return False, "Unable to find download URL."
 
-    # 1. Setup temp path
+    # Setup temp path
     temp_path = os.path.join(server_path, 'temp')
     if os.path.exists(temp_path):
         shutil.rmtree(temp_path)
     os.makedirs(temp_path)
 
-    # 2. Download via wget
+    # Download via wget
     try:
         subprocess.run([
             'wget', '-q', '-P', temp_path, download_url
@@ -369,11 +369,11 @@ def update_bedrock_server(server_path, wiki_url):
 
     server_zip = os.path.join(temp_path, os.path.basename(download_url))
 
-    # 3. Extract
+    # Extract
     with zipfile.ZipFile(server_zip, 'r') as zip_ref:
         zip_ref.extractall(temp_path)
 
-    # 4. Define items to PRESERVE (Worlds, Configs, Mods)
+    # Define items to PRESERVE (Worlds, Configs, Mods)
     preserve = [
         'worlds',
         'server.properties',
@@ -383,7 +383,7 @@ def update_bedrock_server(server_path, wiki_url):
         'behavior_packs'
     ]
 
-    # 5. Atomic Update: Move files from Temp to Server Path
+    # Atomic Update: Move files from Temp to Server Path
     for item in os.listdir(temp_path):
         if item in preserve or item.endswith('.zip'):
             continue
@@ -398,7 +398,7 @@ def update_bedrock_server(server_path, wiki_url):
         else:
             shutil.copy2(src, dst)
 
-    # 6. Make bedrock_server file executable
+    # Make bedrock_server file executable
     binary_path = os.path.join(server_path, 'bedrock_server')
     if os.path.exists(binary_path):
         os.chmod(binary_path, 0o755)
@@ -428,10 +428,10 @@ def get_json_data(file_path):
 
 def save_json_data(file_path, raw_json_string):
     try:
-        # 1. Try to parse the string into a Python object
+        # Parse the string into a Python object
         data = json.loads(raw_json_string)
 
-        # 2. Perform the write operation
+        # Perform the write operation
         with open(file_path, 'w') as f:
             json.dump(data, f, indent=4)
 
@@ -465,7 +465,7 @@ def live_world_backup(server_path, pipe_path, selected_world, world_path):
         # Allow time for Bedrock to flush files to disk
         time.sleep(1)
 
-        # 2. Create the Zip file
+        # Create the Zip file
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         backup_file = os.path.join(
             backup_path, f"{selected_world}_{timestamp}.zip")
@@ -483,7 +483,7 @@ def live_world_backup(server_path, pipe_path, selected_world, world_path):
                     set_path = os.path.join(world_dir_timestamp, rel_path)
                     zf.write(full_path, set_path)
 
-        # 3. Inject 'save resume'
+        # Inject 'save resume'
         with open(pipe_path, "w") as pipe:
             pipe.write("save resume\n")
             pipe.flush()

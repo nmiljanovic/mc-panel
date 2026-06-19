@@ -21,7 +21,6 @@ def watch_logs():
     server_path = settings.SERVER_PATH
     log_file = os.path.join(server_path, settings.LOG_FILE)
 
-    # print("Watching BDS logs for player activity...")
     # Open the file and move to the end
     file = open(log_file, "r")
     file.seek(0, os.SEEK_END)
@@ -36,13 +35,11 @@ def watch_logs():
         if "Player connected:" in line:
             name = line.split("Player connected: ")[1].split(",")[0].strip()
             OnlinePlayer.objects.get_or_create(username=name)
-            # print(f"Detected Join: {name}")
 
         # BDS Leave Pattern: "Player disconnected: Name, xuid: ..."
         elif "Player disconnected:" in line:
             name = line.split("Player disconnected: ")[1].split(",")[0].strip()
             OnlinePlayer.objects.filter(username=name).delete()
-            # print(f"Detected Leave: {name}")
 
 
 if __name__ == "__main__":
