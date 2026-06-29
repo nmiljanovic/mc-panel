@@ -3,6 +3,7 @@ import json
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.contrib.auth import views as auth_views
@@ -26,7 +27,12 @@ from .utils import (
     save_json_data,
     live_world_backup,
     restore_world,
-    player_access_control
+    player_access_control,
+    handle_addon_upload_global,
+    get_global_packs_map,
+    get_world_enabled_addon_uuids,
+    enable_world_addon,
+    disable_world_addon
 )
 
 
@@ -235,6 +241,48 @@ def manage_assets(request):
             os.path.isfile(os.path.join(world_backup_path, f))
         ]
 
+    # Resolve world for target world list
+    selected_list_world = request.GET.get('list_world_name', active_world)
+    if selected_list_world not in worlds:
+        if worlds and worlds[0] != "No worlds found. Start the server first.":
+            selected_list_world = worlds[0]
+        else:
+            selected_list_world = None
+
+    # Load globally installed packs and map active state to the selected world
+    global_packs_map = get_global_packs_map(server_path)
+    global_addons = {'behavior_packs': [], 'resource_packs': []}
+    enabled_uuids = {'bp': set(), 'rp': set()}
+
+    if selected_list_world:
+        enabled_uuids = get_world_enabled_addon_uuids(
+            worlds_path, selected_list_world)
+
+    for uuid, info in global_packs_map.items():
+        pack_type = info['type']
+        version_list = info['version']
+        version_str = ".".join(map(str, version_list)) if isinstance(
+            version_list, list) else str(version_list)
+
+        is_enabled = False
+        if pack_type == 'bp' and uuid in enabled_uuids['bp']:
+            is_enabled = True
+        elif pack_type == 'rp' and uuid in enabled_uuids['rp']:
+            is_enabled = True
+
+        pack_data = {
+            'pack_id': uuid,
+            'name': info['name'],
+            'version_str': version_str,
+            'folder': info['folder'],
+            'is_enabled': is_enabled
+        }
+
+        if pack_type == 'bp':
+            global_addons['behavior_packs'].append(pack_data)
+        else:
+            global_addons['resource_packs'].append(pack_data)
+
     if request.method == "POST":
         if 'set_world' in request.POST:
             selected_world = request.POST.get('world_name')
@@ -296,12 +344,82 @@ def manage_assets(request):
             else:
                 messages.error(request, f"{message}")
 
+        elif 'upload_addon_global' in request.POST:
+            bp_file = request.FILES.get('behavior_pack')
+            rp_file = request.FILES.get('resource_pack')
+
+            if not bp_file and not rp_file:
+                messages.error(
+                    request, "Please select at least one BP/RP to upload.")
+            else:
+
+                if bp_file:
+                    success, message = handle_addon_upload_global(
+                        server_path, bp_file, is_bp=True)
+                    if success:
+                        messages.success(request, f"{message}")
+                    else:
+                        messages.error(request, f"{message}")
+
+                if rp_file:
+                    success, message = handle_addon_upload_global(
+                        server_path, rp_file, is_bp=False)
+                    if success:
+                        messages.success(request, f"{message}")
+                    else:
+                        messages.error(request, f"{message}")
+
+        elif 'enable_addon' in request.POST:
+            selected_world = request.POST.get('world_name')
+            pack_id = request.POST.get('pack_id')
+            pack_type = request.POST.get('pack_type')
+            is_bp = (pack_type == 'bp')
+
+            global_map = get_global_packs_map(server_path)
+            pack_info = global_map.get(pack_id)
+            if pack_info:
+                version = pack_info['version']
+                success, message = enable_world_addon(
+                    worlds_path, selected_world, pack_id, version, is_bp)
+                if success:
+                    messages.success(request, f"Enabled {
+                                     pack_info['name']} for {selected_world}.")
+                else:
+                    messages.error(request, message)
+            else:
+                messages.error(
+                    request, "Unable to locate pack files for addon.")
+
+            return redirect(f"{reverse('manage_assets')}?list_world_name={selected_world}")
+
+        elif 'disable_addon' in request.POST:
+            selected_world = request.POST.get('world_name')
+            pack_id = request.POST.get('pack_id')
+            pack_type = request.POST.get('pack_type')
+            is_bp = (pack_type == 'bp')
+
+            global_map = get_global_packs_map(server_path)
+            pack_info = global_map.get(pack_id)
+            pack_name = pack_info['name'] if pack_info else pack_id
+
+            success, message = disable_world_addon(
+                worlds_path, selected_world, pack_id, is_bp)
+            if success:
+                messages.success(request, f"Disabled {
+                                 pack_name} for {selected_world}.")
+            else:
+                messages.error(request, message)
+
+            return redirect(f"{reverse('manage_assets')}?list_world_name={selected_world}")
+
         return redirect('manage_assets')
 
     return render(request, 'assets.html', {
         'worlds': worlds,
         'active_world': active_world,
-        'world_backups': world_backups
+        'world_backups': world_backups,
+        'selected_list_world': selected_list_world,
+        'global_addons': global_addons
     })
 
 

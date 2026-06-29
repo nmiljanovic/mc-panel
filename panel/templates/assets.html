@@ -72,4 +72,135 @@
             </div>
         </div>
     </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Install Addon</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <small class="text-muted mt-3 d-block">Note: Only .mcpack file format accepted.</small>
+                    <form method="post" class="gy-3" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted"><small>Behavior Pack</small></label>
+                            <input type="file"
+                                   name="behavior_pack"
+                                   class="form-control"
+                                   accept=".mcpack">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted"><small>Resource Pack</small></label>
+                            <input type="file"
+                                   name="resource_pack"
+                                   class="form-control"
+                                   accept=".mcpack">
+                        </div>
+                        <button name="upload_addon_global" class="btn btn-primary">Upload</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Manage Addons</h5>
+            </div>
+            <div class="card-body">
+                <small class="text-muted mt-3 d-block">Note: Settings apply to selected worlds only.</small>
+                <form method="get" class="mt-3 mb-3">
+                    <div class="row align-items-end g-2">
+                        <div class="col">
+                            <label class="form-label text-muted"><small>Target World</small></label>
+                            <select name="list_world_name"
+                                    class="form-select form-select-sm"
+                                    onchange="this.form.submit()">
+                                {% for world in worlds %}
+                                    <option value="{{ world }}"
+                                            {% if world == selected_list_world %}selected{% endif %}>{{ world }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-secondary btn-sm">Load</button>
+                        </div>
+                    </div>
+                </form>
+                <label class="form-label text-muted"><small>Behavior Packs</small></label>
+                {% if global_addons.behavior_packs %}
+                    <ul class="list-group mb-3">
+                        {% for pack in global_addons.behavior_packs %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-2">
+                                <div>
+                                    <span class="d-block fw-semibold" style="font-size: 0.95rem;">{{ pack.name }}</span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">v{{ pack.version_str }} | ID: {{ pack.pack_id|truncatechars:12 }}</small>
+                                    {% if pack.is_enabled %}
+                                        <span class="badge bg-success ms-1" style="font-size: 0.7rem;">Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary ms-1" style="font-size: 0.7rem;">Disabled</span>
+                                    {% endif %}
+                                </div>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="world_name" value="{{ selected_list_world }}">
+                                    <input type="hidden" name="pack_id" value="{{ pack.pack_id }}">
+                                    <input type="hidden" name="pack_type" value="bp">
+                                    {% if pack.is_enabled %}
+                                        <button name="disable_addon"
+                                                class="btn btn-danger btn-sm py-0 px-2"
+                                                style="font-size: 0.8rem">Disable</button>
+                                    {% else %}
+                                        <button name="enable_addon"
+                                                class="btn btn-primary btn-sm py-0 px-2"
+                                                style="font-size: 0.8rem">Enable</button>
+                                    {% endif %}
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted small">No behavior packs found on server.</p>
+                {% endif %}
+                <label class="form-label text-muted"><small>Resource Packs</small></label>
+                {% if global_addons.resource_packs %}
+                    <ul class="list-group">
+                        {% for pack in global_addons.resource_packs %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-2">
+                                <div>
+                                    <span class="d-block fw-semibold" style="font-size: 0.95rem;">{{ pack.name }}</span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">v{{ pack.version_str }} | ID: {{ pack.pack_id|truncatechars:12 }}</small>
+                                    {% if pack.is_enabled %}
+                                        <span class="badge bg-success ms-1" style="font-size: 0.7rem;">Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary ms-1" style="font-size: 0.7rem;">Disabled</span>
+                                    {% endif %}
+                                </div>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="world_name" value="{{ selected_list_world }}">
+                                    <input type="hidden" name="pack_id" value="{{ pack.pack_id }}">
+                                    <input type="hidden" name="pack_type" value="rp">
+                                    {% if pack.is_enabled %}
+                                        <button name="disable_addon"
+                                                class="btn btn-danger btn-sm py-0 px-2"
+                                                style="font-size: 0.8rem">Disable</button>
+                                    {% else %}
+                                        <button name="enable_addon"
+                                                class="btn btn-primary btn-sm py-0 px-2"
+                                                style="font-size: 0.8rem">Enable</button>
+                                    {% endif %}
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted small mb-0">No resource packs found on server.</p>
+                {% endif %}
+                <div class="alert alert-warning mt-4">
+                    <strong>Note:</strong> Server restart required
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

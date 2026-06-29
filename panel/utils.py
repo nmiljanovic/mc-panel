@@ -546,3 +546,232 @@ def player_access_control(command, pipe_path, log_file):
         return False, f"File system error: {str(e)}"
     except Exception as e:
         return False, f"Error sending command: {str(e)}"
+
+
+def handle_addon_upload_global(server_path, addon_file, is_bp=True):
+    # Extract .mcpack archive to behavior_packs or resource_packs directory
+    pack_type_dir = 'behavior_packs' if is_bp else 'resource_packs'
+    dest_base_dir = os.path.join(server_path, pack_type_dir)
+    os.makedirs(dest_base_dir, exist_ok=True)
+
+    # Clean the file name to create a safe directory name
+    addon_name, _ = os.path.splitext(addon_file.name)
+    addon_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', addon_name)
+    dest_pack_dir = os.path.join(dest_base_dir, addon_name)
+
+    try:
+        if os.path.exists(dest_pack_dir):
+            shutil.rmtree(dest_pack_dir)
+        os.makedirs(dest_pack_dir, exist_ok=True)
+
+        with zipfile.ZipFile(addon_file, 'r') as zip_ref:
+            zip_ref.extractall(dest_pack_dir)
+    except zipfile.BadZipFile:
+        shutil.rmtree(dest_pack_dir, ignore_errors=True)
+        return False, f"{addon_file.name} is not a valid zip/mcpack archive."
+    except Exception as e:
+        shutil.rmtree(dest_pack_dir, ignore_errors=True)
+        return False, f"Failed to extract {addon_file.name}: {str(e)}"
+
+    manifest_path = os.path.join(dest_pack_dir, 'manifest.json')
+    if not os.path.exists(manifest_path):
+        nested_dirs = [d for d in os.listdir(
+            dest_pack_dir) if os.path.isdir(os.path.join(dest_pack_dir, d))]
+        found_nested = False
+        for nd in nested_dirs:
+            test_path = os.path.join(dest_pack_dir, nd, 'manifest.json')
+            if os.path.exists(test_path):
+                subfolder_path = os.path.join(dest_pack_dir, nd)
+                for item in os.listdir(subfolder_path):
+                    shutil.move(os.path.join(
+                        subfolder_path, item), dest_pack_dir)
+                os.rmdir(subfolder_path)
+                manifest_path = os.path.join(dest_pack_dir, 'manifest.json')
+                found_nested = True
+                break
+        if not found_nested:
+            shutil.rmtree(dest_pack_dir, ignore_errors=True)
+            return False, f"Missing manifest.json in {addon_file.name}."
+
+    try:
+        with open(manifest_path, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+            content = re.sub(r'//.*', '', content)
+            content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+            manifest_data = json.loads(content)
+    except Exception as e:
+        shutil.rmtree(dest_pack_dir, ignore_errors=True)
+        return False, f"Unable to read manifest.json: {str(e)}"
+
+    header = manifest_data.get('header', {})
+    uuid = header.get('uuid')
+
+    if not uuid:
+        shutil.rmtree(dest_pack_dir, ignore_errors=True)
+        return False, "Pack manifest does not contain a 'header.uuid' value."
+
+    pack_label = "Behavior Pack" if is_bp else "Resource Pack"
+    return True, f"Successfully uploaded {pack_label} ({header.get('name', addon_name)})."
+
+
+def get_global_packs_map(server_path):
+    """
+    Scan behavior_packs and resource_packs to map pack UUIDs
+    to details (name, version list, folder, and pack type).
+    Filter out hidden files, system directories, and script/internal packages.
+    """
+    packs_map = {}
+
+    # 1st Layer: Filter by physical directory prefixes
+    SYSTEM_PREFIXES = (
+        'vanilla', 'experimental', 'chemistry', 'education',
+        'editor', 'drop_', 'playtest', 'villager_',
+        'multiplayer', 'treatment', 'preview', 'resourcepack', 'server_'
+    )
+
+    for pack_type in ['behavior_packs', 'resource_packs']:
+        base_dir = os.path.join(server_path, pack_type)
+        if not os.path.isdir(base_dir):
+            continue
+
+        for item in os.listdir(base_dir):
+            item_lower = item.lower()
+
+            # Skip hidden files, system prefixes, and dirs starting with '@'
+            if (item.startswith('.') or
+                item.startswith('@') or
+                    any(item_lower.startswith(prefix) for prefix in SYSTEM_PREFIXES)):
+                continue
+
+            item_path = os.path.join(base_dir, item)
+            if os.path.isdir(item_path):
+                manifest_path = os.path.join(item_path, 'manifest.json')
+                if os.path.exists(manifest_path):
+                    try:
+                        with open(manifest_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            content = f.read()
+                            # Clean up comments inside manifest.json if present
+                            content = re.sub(r'//.*', '', content)
+                            content = re.sub(r'/\*.*?\*/', '',
+                                             content, flags=re.DOTALL)
+                            data = json.loads(content)
+                            header = data.get('header', {})
+                            uuid = header.get('uuid')
+                            name = header.get('name', item)
+                            version = header.get('version', [1, 0, 0])
+
+                            name_lower = name.lower()
+
+                            # 2nd Layer: Filter by parsed display names
+                            if (name_lower.startswith('pack.name') or
+                                'vanilla' in name_lower or
+                                'resourcepack' in name_lower or
+                                'ts library' in name_lower or
+                                'server editor' in name_lower or
+                                'experimental' in name_lower or
+                                'villager trade' in name_lower or
+                                    'drop 2 of' in name_lower):
+                                continue
+
+                            if uuid:
+                                packs_map[uuid] = {
+                                    'name': name,
+                                    'version': version,
+                                    'folder': item,
+                                    'type': 'bp' if pack_type == 'behavior_packs' else 'rp'
+                                }
+                    except Exception:
+                        pass
+    return packs_map
+
+
+def get_world_enabled_addon_uuids(worlds_path, world_name):
+    # Return sets of UUIDs currently enabled in the specified world
+    world_dir = os.path.join(worlds_path, world_name)
+    enabled = {'bp': set(), 'rp': set()}
+    if not os.path.isdir(world_dir):
+        return enabled
+
+    for filename, key in [('world_behavior_packs.json', 'bp'), ('world_resource_packs.json', 'rp')]:
+        json_path = os.path.join(world_dir, filename)
+        if os.path.exists(json_path):
+            try:
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    packs = json.load(f)
+                    if isinstance(packs, list):
+                        for pack in packs:
+                            uuid = pack.get('pack_id')
+                            if uuid:
+                                enabled[key].add(uuid)
+            except Exception:
+                pass
+    return enabled
+
+
+def enable_world_addon(worlds_path, world_name, pack_id, version, is_bp):
+    # Add a pack's configuration entry to the selected world's JSON list
+    world_dir = os.path.join(worlds_path, world_name)
+    if not os.path.isdir(world_dir):
+        return False, "Target world directory does not exist."
+
+    filename = 'world_behavior_packs.json' if is_bp else 'world_resource_packs.json'
+    json_path = os.path.join(world_dir, filename)
+
+    packs_list = []
+    if os.path.exists(json_path):
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                packs_list = json.load(f)
+                if not isinstance(packs_list, list):
+                    packs_list = []
+        except Exception:
+            packs_list = []
+
+    updated = False
+    for p in packs_list:
+        if p.get('pack_id') == pack_id:
+            p['version'] = version
+            updated = True
+            break
+
+    if not updated:
+        packs_list.append({
+            'pack_id': pack_id,
+            'version': version
+        })
+
+    try:
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(packs_list, f, indent=4)
+        return True, "Addon enabled for the world."
+    except Exception as e:
+        return False, f"Failed to enable addon: {str(e)}"
+
+
+def disable_world_addon(worlds_path, world_name, pack_id, is_bp):
+    # Remove a pack's configuration entry from the selected world's JSON list
+    world_dir = os.path.join(worlds_path, world_name)
+    filename = 'world_behavior_packs.json' if is_bp else 'world_resource_packs.json'
+    json_path = os.path.join(world_dir, filename)
+
+    if not os.path.exists(json_path):
+        return False, "World addon config file not found."
+
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            packs = json.load(f)
+
+        if not isinstance(packs, list):
+            return False, "Invalid world configuration layout."
+
+        new_packs = [p for p in packs if p.get('pack_id') != pack_id]
+
+        if len(packs) == len(new_packs):
+            return False, "Addon is not currently enabled in this world."
+
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(new_packs, f, indent=4)
+
+        return True, "Addon disabled for the world."
+    except Exception as e:
+        return False, f"Failed to disable addon: {str(e)}"
