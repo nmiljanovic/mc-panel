@@ -345,7 +345,7 @@ def compare_server_versions(wiki_url):
 
 def update_bedrock_server(server_path, wiki_url):
     if is_server_running():
-        return False, "Cannot update. Stop the server first."
+        return False, "Unable to update. Stop the server first."
 
     download_url = get_latest_version_url(wiki_url)
     if not download_url:
@@ -568,7 +568,7 @@ def handle_addon_upload_global(server_path, addon_file, is_bp=True):
             zip_ref.extractall(dest_pack_dir)
     except zipfile.BadZipFile:
         shutil.rmtree(dest_pack_dir, ignore_errors=True)
-        return False, f"{addon_file.name} is not a valid zip/mcpack archive."
+        return False, "Not a valid zip/mcpack archive."
     except Exception as e:
         shutil.rmtree(dest_pack_dir, ignore_errors=True)
         return False, f"Failed to extract {addon_file.name}: {str(e)}"
@@ -608,10 +608,11 @@ def handle_addon_upload_global(server_path, addon_file, is_bp=True):
 
     if not uuid:
         shutil.rmtree(dest_pack_dir, ignore_errors=True)
-        return False, "Pack manifest does not contain a 'header.uuid' value."
+        return False, "Pack manifest does not contain 'header.uuid'."
 
     pack_label = "Behavior Pack" if is_bp else "Resource Pack"
-    return True, f"Successfully uploaded {pack_label} ({header.get('name', addon_name)})."
+    # ({header.get('name', addon_name)})
+    return True, f"Successfully uploaded {pack_label}."
 
 
 def get_global_packs_map(server_path):
