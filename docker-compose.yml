@@ -10,5 +10,5 @@ services:
       - /home/$USER/world_backups:/world_backups
     ports:
       - "127.0.0.1:$PORT:$PORT/tcp"
-      - "127.0.0.1:$PORT:$MCPORT/udp"
-      - "127.0.0.1:$PORT:$MCPORTV6/udp"
+      - "127.0.0.1:$MCPORT:$MCPORT/udp"
+      - "127.0.0.1:$MCPORTV6:$MCPORTV6/udp"
