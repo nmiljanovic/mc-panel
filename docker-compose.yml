@@ -11,3 +11,4 @@ services:
     ports:
       - "127.0.0.1:$PORT:$PORT/tcp"
       - "127.0.0.1:$PORT:$MCPORT/udp"
+      - "127.0.0.1:$PORT:$MCPORTV6/udp"
