@@ -9,7 +9,7 @@ class OnlinePlayer(models.Model):
     @property
     def avatar(self):
         avatar_url = settings.AVATAR_URL
-        return f"{avatar_url}{self.username}/32.png"
+        return f"{avatar_url}{self.username}/bedrock?size=32"
 
     def __str__(self):
         return self.username
