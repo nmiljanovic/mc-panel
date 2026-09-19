@@ -10,7 +10,9 @@ services:
       - /home/$USER/world_backups:/world_backups
     ports:
       - "127.0.0.1:$PORT:$PORT/tcp"
-      - "127.0.0.1:59134:19134/udp"
-      - "127.0.0.1:59135:19135/udp"
+      # Nginx owns ports
+      - "127.0.0.1:59134:$MCPORT/udp"
+      - "127.0.0.1:59135:$MCPORTV6/udp"
+      # Docker owns ports
       # - "$MCPORT:$MCPORT/udp"
       # - "$MCPORTV6:$MCPORTV6/udp"
