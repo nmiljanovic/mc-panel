@@ -11,8 +11,8 @@ services:
     ports:
       - "127.0.0.1:$PORT:$PORT/tcp"
       # Nginx owns ports
-      - "127.0.0.1:59134:$MCPORT/udp"
-      - "127.0.0.1:59135:$MCPORTV6/udp"
+      # - "127.0.0.1:$NGINXPORT:$MCPORT/udp"
+      # - "127.0.0.1:$NGINXPORTV6:$MCPORTV6/udp"
       # Docker owns ports
-      # - "$MCPORT:$MCPORT/udp"
-      # - "$MCPORTV6:$MCPORTV6/udp"
+      - "$MCPORT:$MCPORT/udp"
+      - "$MCPORTV6:$MCPORTV6/udp"
