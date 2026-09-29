@@ -1,4 +1,4 @@
-Bedrock Server Management Portal
+Bedrock Server Management Panel
 
 # Run the ServerDownload.sh script to fetch and unzip latest bedrock server:
 chmod u+x ServerDownload.sh && ./ServerDownload.sh
