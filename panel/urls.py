@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from django.views.decorators.cache import never_cache
 from .views import LimitedLoginView
 from .views import LoginForm
 
@@ -9,10 +10,10 @@ urlpatterns = [
     path('manager/', views.manage_server, name='manage_server'),
     path(
         'accounts/login/',
-        LimitedLoginView.as_view(
+        never_cache(LimitedLoginView.as_view(
             template_name='login.html',
             authentication_form=LoginForm
-        ),
+        )),
         name='login'
     ),
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),

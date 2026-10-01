@@ -17,6 +17,7 @@ LOG_FILE = config('LOG_FILE')
 # Security settings for HTTPS
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', cast=bool)
+SESSION_COOKIE_AGE = 86400
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', cast=bool)
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', '').split(',')
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', '').split(',')
