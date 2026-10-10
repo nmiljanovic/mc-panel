@@ -343,6 +343,8 @@ def compare_server_versions(wiki_url):
     # Conc ver to 3 decimal places (mcstatus format 0.0.0)
     latest_version_str = ".".join(match.group(1).split(".")[:3])
     current_version_str = get_server_stats().get('version', '0.0.0')
+    if current_version_str == 'N/A':
+        return False, "Unable to retrieve server version."
 
     # Map conversion e.g., 1.26.23.1 to (1, 26, 23, 1)
     latest_version_tuple = tuple(map(int, latest_version_str.split('.')))
