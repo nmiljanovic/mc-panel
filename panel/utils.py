@@ -338,7 +338,7 @@ def compare_server_versions(wiki_url):
     match = re.search(
         r'bedrock-server-([\d.]+)\.zip', latest_version_url)
     if not match:
-        return False, "Unable to parse version url from wiki."
+        return False, "Unable to parse version url."
 
     # Conc ver to 3 decimal places (mcstatus format 0.0.0)
     latest_version_str = ".".join(match.group(1).split(".")[:3])
