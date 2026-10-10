@@ -309,25 +309,34 @@ def get_latest_version_url(wiki_url):
         with urllib.request.urlopen(req, timeout=10) as response:
             # urllib returns bytes, decode to string
             html_content = response.read().decode('utf-8')
+        # Look for Release:
+        match = re.search(
+            r'<b>Release:</b>\s*<a[^>]*>([0-9.]+)</a>',
+            html_content
+        )
+        if match:
+            version = match.group(1)
+            return f"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-{version}.zip"
 
         # Look for https link containing 'bin-linux' ending in .zip
-        links = re.findall(
-            r'https://[^\s"<>]+bin-linux[^\s"<>]+?\.zip', html_content)
-
+        # links = re.findall(
+        #    r'https://[^\s"<>]+bin-linux[^\s"<>]+?\.zip', html_content)
         # Filter out "preview" versions
-        stable_link = [link for link in links if "preview" not in link.lower()]
-
+        # stable_link = [link for link in links if "preview" not in link.lower()]
         # Return the last match
-        return stable_link[-1] if stable_link else None
+        # return stable_link[-1] if stable_link else None
 
     except Exception as e:
         return False, f"Unable to fetch url from wiki: {str(e)}"
-        return None
 
 
 def compare_server_versions(wiki_url):
+    latest_version_url = get_latest_version_url(wiki_url)
+    # Check if the URL fetch failed or returned None
+    if not latest_version_url:
+        return False, "Unable to retrieve url from wiki."
     match = re.search(
-        r'bedrock-server-([\d.]+)\.zip', get_latest_version_url(wiki_url))
+        r'bedrock-server-([\d.]+)\.zip', latest_version_url)
     if not match:
         return False, "Unable to parse version url from wiki."
 
