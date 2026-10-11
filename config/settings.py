@@ -47,7 +47,7 @@ MIDDLEWARE = [
 if config('USE_WHITENOISE'):
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
-ROOT_URLCONF = 'manager.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -64,7 +64,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'manager.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database

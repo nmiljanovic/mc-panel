@@ -25,4 +25,4 @@ WORKDIR /mcpanel
 COPY . /mcpanel
 
 # JSON form that explicitly calls a shell to expand PORT 
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} manager.wsgi"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} config.wsgi"]
