@@ -334,7 +334,7 @@ def compare_server_versions(wiki_url):
     latest_version_url = get_latest_version_url(wiki_url)
     # Check if the URL fetch failed or returned None
     if not latest_version_url:
-        return False, "Unable to retrieve url from wiki."
+        return False, "Unable to get version url from wiki."
     match = re.search(
         r'bedrock-server-([\d.]+)\.zip', latest_version_url)
     if not match:
@@ -344,7 +344,7 @@ def compare_server_versions(wiki_url):
     latest_version_str = ".".join(match.group(1).split(".")[:3])
     current_version_str = get_server_stats().get('version', '0.0.0')
     if current_version_str == 'N/A':
-        return False, "Unable to retrieve server version."
+        return False, "Unable to get server version."
 
     # Map conversion e.g., 1.26.23.1 to (1, 26, 23, 1)
     latest_version_tuple = tuple(map(int, latest_version_str.split('.')))
