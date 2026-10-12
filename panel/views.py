@@ -148,6 +148,7 @@ def manage_server(request):
     stats = get_server_stats()
     process_name = 'bedrock_server'
     scraper_path = os.path.join(os.path.dirname(__file__), 'watch_logs.py')
+    prop_path = os.path.join(server_path, 'server.properties')
 
     if is_server_running():
         success, message = compare_server_versions(wiki_url)
@@ -159,7 +160,7 @@ def manage_server(request):
     if request.method == "POST":
         if 'start' in request.POST.get("action"):
             success, message = start_bedrock_server(
-                server_path, pipe_path, log_file, scraper_path)
+                server_path, pipe_path, log_file, scraper_path, prop_path)
             if not success:
                 messages.error(request, f"{message}")
 

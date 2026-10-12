@@ -12,7 +12,7 @@ from django.conf import settings
 from .models import OnlinePlayer
 
 
-def get_server_stats(ip="127.0.0.1", port=19132):
+def get_server_stats():
     # System Stats
     memory = psutil.virtual_memory()
     disk = psutil.disk_usage('/')
@@ -40,14 +40,14 @@ def get_server_stats(ip="127.0.0.1", port=19132):
     try:
         # Minecraft server stats
         server_path = settings.SERVER_PATH
-        properties_path = os.path.join(server_path, "server.properties")
-        server_port = get_port_from_properties(properties_path)
-        server_ip = get_ip_from_properties(properties_path)
-        url = f"http://{server_ip}:{server_port}/v1/join"
+        prop_path = os.path.join(server_path, "server.properties")
+        server_port = get_port_from_properties(prop_path)
+        server_ip = get_ip_from_properties(prop_path)
+        server_url = f"http://{server_ip}:{server_port}/v1/join"
         # Urllib handles the connection to server
-        with urllib.request.urlopen(url, timeout=1.0) as response:
-            raw_data = response.read().decode("utf-8")
-            status = json.loads(raw_data)
+        with urllib.request.urlopen(server_url) as response:
+            raw_data = response.read().decode("utf-8").strip()
+        status = json.loads(raw_data)
 
         stats['online'] = True
         stats['name'] = status.get("name")
@@ -142,9 +142,14 @@ def get_latest_logs(log_file, line_count=30):
         return f"Unable to read log file: {str(e)}"
 
 
-def start_bedrock_server(server_path, pipe_path, log_file, scraper_path):
+def start_bedrock_server(server_path, pipe_path, log_file, scraper_path, prop_path):
     if is_server_running():
         return False, "Server is already started."
+
+    if not get_port_from_properties(prop_path):
+        return False, "Set 'server-port' in the server.properties file."
+    if not get_ip_from_properties(prop_path):
+        return False, "Set 'server-udp-ports' in the server.properties file."
 
     # Check if pipe exists before starting the process
     if not os.path.exists(pipe_path):
@@ -211,44 +216,43 @@ def is_server_running():
     return False
 
 
-def get_port_from_properties(file_path):
-    default_port = 19132
-    if not os.path.exists(file_path):
-        return default_port
+def get_port_from_properties(prop_path):
+    if not os.path.exists(prop_path):
+        return False, "No server.properties file found."
 
     try:
-        with open(file_path, 'r') as f:
+        with open(prop_path, 'r') as f:
             for line in f:
                 # Remove spaces and look for server-ports
                 clean_line = line.strip().replace(" ", "")
                 if clean_line.startswith("server-port="):
-                    port = int(clean_line.split("=")[1])
+                    port = clean_line.split("=")[1].strip()
+                    if not port:
+                        return False
                     return port
 
     except Exception:
-        pass  # Fallback to default if there is a read error
-
-    return default_port
+        return False
 
 
-def get_ip_from_properties(file_path):
-    default_ip = '127.0.0.1'
-    if not os.path.exists(file_path):
-        return default_ip
+def get_ip_from_properties(prop_path):
+    if not os.path.exists(prop_path):
+        return False, "No server.properties file found."
 
     try:
-        with open(file_path, 'r') as f:
+        with open(prop_path, 'r') as f:
             for line in f:
                 # Remove spaces and look for server-udp-ports
                 clean_line = line.strip().replace(" ", "")
                 if clean_line.startswith("server-udp-ports="):
-                    value_part = clean_line.split("=")[1]
+                    value_part = clean_line.split("=")[1].strip()
                     ip_address = value_part.split(":")[0]
+                    if not ip_address:
+                        return False
                     return ip_address
-    except Exception:
-        pass  # Fallback to default if there is a read error
 
-    return default_ip
+    except Exception:
+        return False
 
 
 def handle_world_upload(server_path, worlds_path, world_file):
