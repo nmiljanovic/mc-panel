@@ -45,9 +45,6 @@ def get_server_stats():
         server_ip = get_ip_from_properties(prop_path)
         server_url = f"http://{server_ip}:{server_port}/v1/join"
         # Urllib handles the connection to server
-      #  with urllib.request.urlopen(server_url) as response:
-      #      raw_data = response.read().decode("utf-8").strip()
-      #  status = json.loads(raw_data)
         while True:
             try:
                 with urllib.request.urlopen(server_url) as response:
