@@ -41,8 +41,9 @@ def get_server_stats(ip="127.0.0.1", port=19132):
         # Minecraft server stats
         server_path = settings.SERVER_PATH
         properties_path = os.path.join(server_path, "server.properties")
-        current_port = get_port_from_properties(properties_path)
-        url = f"http://{ip}:{current_port}/v1/join"
+        server_port = get_port_from_properties(properties_path)
+        server_ip = get_ip_from_properties(properties_path)
+        url = f"http://{server_ip}:{server_port}/v1/join"
         # Urllib handles the connection to server
         with urllib.request.urlopen(url, timeout=1.0) as response:
             raw_data = response.read().decode("utf-8")
@@ -218,14 +219,36 @@ def get_port_from_properties(file_path):
     try:
         with open(file_path, 'r') as f:
             for line in f:
-                # Remove spaces and look for the port key
+                # Remove spaces and look for server-ports
                 clean_line = line.strip().replace(" ", "")
                 if clean_line.startswith("server-port="):
-                    return int(clean_line.split("=")[1])
+                    port = int(clean_line.split("=")[1])
+                    return port
+
     except Exception:
         pass  # Fallback to default if there is a read error
 
     return default_port
+
+
+def get_ip_from_properties(file_path):
+    default_ip = '127.0.0.1'
+    if not os.path.exists(file_path):
+        return default_ip
+
+    try:
+        with open(file_path, 'r') as f:
+            for line in f:
+                # Remove spaces and look for server-udp-ports
+                clean_line = line.strip().replace(" ", "")
+                if clean_line.startswith("server-udp-ports="):
+                    value_part = clean_line.split("=")[1]
+                    ip_address = value_part.split(":")[0]
+                    return ip_address
+    except Exception:
+        pass  # Fallback to default if there is a read error
+
+    return default_ip
 
 
 def handle_world_upload(server_path, worlds_path, world_file):
