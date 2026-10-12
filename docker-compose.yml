@@ -16,6 +16,6 @@ services:
       # Raknet Docker owns ports
       # - "$MCPORT:$MCPORT/udp"
       # - "$MCPORTV6:$MCPORTV6/udp"
-      Nethernet Docker owns ports
+      # Nethernet Docker owns ports
       - "$MCPORT:$MCPORT/tcp"
       - "$NETHERPORTS:$NETHERPORTS/udp"
