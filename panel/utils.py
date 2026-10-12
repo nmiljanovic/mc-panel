@@ -9,7 +9,6 @@ import zipfile
 import subprocess
 import urllib.request
 from django.conf import settings
-from mcstatus import BedrockServer
 from .models import OnlinePlayer
 
 
@@ -27,32 +26,38 @@ def get_server_stats(ip="127.0.0.1", port=19132):
         'disk_total': round(disk.total / (1024**3), 1),
         # Satus page
         "online": False,
-        "motd": "N/A",
+        "name": "N/A",
+        "version": "N/A",
+        "level": "N/A",
         "players_online": 0,
         "players_max": 0,
-        "version": "N/A",
-        "map_name": "N/A",
         "gamemode": "N/A",
-        "latency": 0,
         "players": []
     }
 
-    # Minecraft Stats
-    server_path = settings.SERVER_PATH
-    properties_path = os.path.join(server_path, "server.properties")
-    current_port = get_port_from_properties(properties_path)
-
+    if not is_server_running():
+        return stats
     try:
-        server = BedrockServer.lookup(f"{ip}:{current_port}")
-        status = server.status()
+        # Minecraft server stats
+        server_path = settings.SERVER_PATH
+        properties_path = os.path.join(server_path, "server.properties")
+        current_port = get_port_from_properties(properties_path)
+        url = f"http://{ip}:{current_port}/v1/join"
+        # Urllib handles the connection to server
+        with urllib.request.urlopen(url, timeout=1.0) as response:
+            raw_data = response.read().decode("utf-8")
+            status = json.loads(raw_data)
+
         stats['online'] = True
-        stats['motd'] = status.motd.to_plain()
-        stats['players_online'] = status.players.online
-        stats['players_max'] = status.players.max
-        stats['version'] = status.version.version
-        stats['map_name'] = status.map_name
-        stats['gamemode'] = status.gamemode
-        stats['latency'] = round(status.latency, 2)
+        stats['name'] = status.get("name")
+        stats['version'] = status.get("version")
+        stats['level'] = status.get("level")
+        stats['players_online'] = status.get("players")
+        stats['players_max'] = status.get("maxPlayers")
+        if status.get("gameType") == 0:
+            stats['gamemode'] = 'Survival'
+        elif status.get("gameType") == 1:
+            stats['gamemode'] = 'Creative'
         stats['players'] = OnlinePlayer.objects.all()
 
     except Exception as e:

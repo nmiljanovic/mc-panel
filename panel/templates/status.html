@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
     <style>
         .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
@@ -40,7 +40,7 @@
                 {% endif %}
             </div>
             <div class="col-md-12">
-                <p class="text-muted fs-5">{{ stats.motd }}</p>
+                <p class="text-muted fs-5">{{ stats.name }}</p>
             </div>
         </div>
         <div class="row g-4">
@@ -57,7 +57,7 @@
                         </div>
                         <div class="col-6">
                             <div class="stat-label">WORLD</div>
-                            <div class="stat-value text-truncate">{{ stats.map_name }}</div>
+                            <div class="stat-value text-truncate">{{ stats.level }}</div>
                         </div>
                         <div class="col-6">
                             <div class="stat-label">GAMEMODE</div>
