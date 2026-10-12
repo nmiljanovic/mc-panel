@@ -18,4 +18,5 @@ services:
       # - "$MCPORTV6:$MCPORTV6/udp"
       # Nethernet Docker owns ports
       - "$MCPORT:$MCPORT/tcp"
+      - "$MCPORT:$MCPORT/udp"
       - "$NETHERPORTS:$NETHERPORTS/udp"
