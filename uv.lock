@@ -12,15 +12,6 @@ wheels = [
 ]
 
 [[package]]
-name = "asyncio-dgram"
-version = "3.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/57/92/531067e931af346b13cab79ab9be2619b043e54d611f413809e71119e093/asyncio_dgram-3.0.0.tar.gz", hash = "sha256:bd0937807a44451d799573b32400702187fd0bba6136f7cf306e9327c0c20f3e", size = 26500, upload-time = "2026-01-21T19:40:18.547Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/af/a1/ad5d53a50d07b4da934c5ff7db8fc3cfd091660b0f78174499644c72523f/asyncio_dgram-3.0.0-py3-none-any.whl", hash = "sha256:a4113061e6a7fbeee928d49c56cb61b68ca4a2fbee37f7e97280bbc72323ba8e", size = 7092, upload-time = "2026-01-21T19:40:17.309Z" },
-]
-
-[[package]]
 name = "django"
 version = "6.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -35,15 +26,6 @@ wheels = [
 ]
 
 [[package]]
-name = "dnspython"
-version = "2.8.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8c/8b/57666417c0f90f08bcafa776861060426765fdb422eb10212086fb811d26/dnspython-2.8.0.tar.gz", hash = "sha256:181d3c6996452cb1189c4046c61599b84a5a86e099562ffde77d26984ff26d0f", size = 368251, upload-time = "2025-09-07T18:58:00.022Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/5a/18ad964b0086c6e62e2e7500f7edc89e3faa45033c71c1893d34eed2b2de/dnspython-2.8.0-py3-none-any.whl", hash = "sha256:01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af", size = 331094, upload-time = "2025-09-07T18:57:58.071Z" },
-]
-
-[[package]]
 name = "gunicorn"
 version = "25.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -53,19 +35,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f3/e5/e1d2225d2b75fe4988821715d2c526fdf7b39f4a7260aa7e2bb4b25ec65c/gunicorn-25.0.3.tar.gz", hash = "sha256:b53a7fff1a07b825b962af320554de44ae77a26abfa373711ff3f83d57d3506d", size = 9702357, upload-time = "2026-02-07T16:53:52.72Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5e/84/117f39896ded517149be72d16c02252885690e9b0d1b84281944928f61aa/gunicorn-25.0.3-py3-none-any.whl", hash = "sha256:aca364c096c81ca11acd4cede0aaeea91ba76ca74e2c0d7f879154db9d890f35", size = 171728, upload-time = "2026-02-07T16:53:49.546Z" },
-]
-
-[[package]]
-name = "mcstatus"
-version = "12.2.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "asyncio-dgram" },
-    { name = "dnspython" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a2/7f/cd398f3eb1b8d4e7bfacfaa5b9bdebd51855a536125899d91f6b81a98e3b/mcstatus-12.2.1.tar.gz", hash = "sha256:0c6fb84c96685bb02189951ba895afbaca22b65bfe74e7fc55ef73a1c6e8a9ce", size = 144402, upload-time = "2026-02-11T18:04:27.853Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/19/f7/225cb699be585f4c39f4a66150829a2d1fb402958e25f639f1f2fba19d90/mcstatus-12.2.1-py3-none-any.whl", hash = "sha256:9da6b8b6c1a43521f13cc50f312501091c1e7437c3ad2d65b9ccb534d70b1244", size = 49868, upload-time = "2026-02-11T18:04:26.691Z" },
 ]
 
 [[package]]
@@ -84,7 +53,6 @@ source = { virtual = "." }
 dependencies = [
     { name = "django" },
     { name = "gunicorn" },
-    { name = "mcstatus" },
     { name = "psutil" },
     { name = "python-decouple" },
 ]
@@ -98,7 +66,6 @@ dev = [
 requires-dist = [
     { name = "django", specifier = ">=6.0.2" },
     { name = "gunicorn", specifier = ">=25.0.3" },
-    { name = "mcstatus", specifier = ">=12.2.1" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "python-decouple", specifier = ">=3.8" },
 ]
